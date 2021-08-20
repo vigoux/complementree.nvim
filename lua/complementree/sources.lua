@@ -31,7 +31,7 @@ local function get_luasnip(preffix)
   --  wordTrig = bool
   -- }
   local function add_snippet(s)
-    if vim.startswith(s.name, preffix) then
+    if vim.startswith(s.trigger, preffix) then
       table.insert(items, {
         word = s.trigger,
         abbr = s.name,
