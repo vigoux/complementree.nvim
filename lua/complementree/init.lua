@@ -12,7 +12,6 @@ function M.setup(config)
     error "This config does not have a default key."
   end
   user_config = config
-  vim.cmd [[ autocmd CompleteDone * lua require'completree.sources'._CompleteDone() ]]
 end
 
 function M.print_config()

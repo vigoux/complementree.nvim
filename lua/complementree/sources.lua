@@ -56,6 +56,7 @@ function M.lsp()
       end
       if vim.startswith(word, preffix) then
         item.client_id = client_id
+        item.source = 'lsp'
         table.insert(matches, {
           word = word,
           abbr = item.label,
@@ -86,9 +87,7 @@ local function apply_snippet(item, suffix)
   end
 end
 
-function M._CompleteDone()
-  local completed_item = api.nvim_get_vvar('completed_item')
-  if not completed_item or not completed_item.user_data then return end
+local function lsp_completedone(completed_item)
   local lnum, col = unpack(api.nvim_win_get_cursor(0))
   lnum = lnum - 1
   local item = completed_item.user_data
@@ -134,6 +133,21 @@ function M._CompleteDone()
   elseif expand_snippet then
     tidy()
     apply_snippet(item, suffix)
+  end
+end
+
+local complete_done_cbs = {
+  lsp = lsp_completedone
+}
+
+function M._CompleteDone()
+  local completed_item = api.nvim_get_vvar('completed_item')
+  if not completed_item
+     or not completed_item.user_data
+     or not completed_item.user_data.source then return end
+  local func = complete_done_cbs[completed_item.user_data.source]
+  if func then
+    func(completed_item)
   end
 end
 
