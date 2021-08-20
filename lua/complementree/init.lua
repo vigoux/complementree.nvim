@@ -22,6 +22,12 @@ function M.complete()
   local bufnr = api.nvim_get_current_buf()
   local ft = api.nvim_buf_get_option(bufnr, "filetype")
 
+  local line = api.nvim_get_current_line()
+  local cursor_pos = api.nvim_win_get_cursor(0)[2]
+  local line_to_cursor = line:sub(1, cursor_pos)
+  local col = vim.fn.match(line_to_cursor, '\\k*$') + 1
+  local preffix = line:sub(col, cursor_pos)
+
   local ft_completion = user_config[ft] or user_config.default
   if ft_completion then
     if type(ft_completion) == "table" then
@@ -33,10 +39,10 @@ function M.complete()
 
       local sub_completion = ft_completion[node:type()] or ft_completion.default
       if sub_completion then
-        sub_completion(api.nvim_get_current_line())
+        sub_completion(line, line_to_cursor, preffix, col)
       end
     elseif type(ft_completion) == "function" then
-      ft_completion(api.nvim_get_current_line())
+      ft_completion(line, line_to_cursor, preffix, col)
     end
   end
 end

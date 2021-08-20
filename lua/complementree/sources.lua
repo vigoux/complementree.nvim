@@ -17,19 +17,48 @@ function M.dummy()
   -- Does nothing
 end
 
+local function get_luasnip(preffix)
+  local snippets = require'luasnip'.available()
+
+  local items = {}
+
+  -- Luasnip format:
+  -- {
+  --  description = table(string),
+  --  name = string,
+  --  regTrig = bool,
+  --  trigger = string,
+  --  wordTrig = bool
+  -- }
+  local function add_snippet(s)
+    if vim.startswith(s.name, preffix) then
+      table.insert(items, {
+        word = s.trigger,
+        abbr = s.name,
+        kind = "S",
+        menu = table.concat(s.description or {}),
+        icase = 1,
+        dup = 1,
+        empty = 1,
+        user_data = { source = "luasnip" }
+      })
+    end
+  end
+
+  vim.tbl_map(add_snippet, snippets.all)
+  vim.tbl_map(add_snippet, snippets[api.nvim_buf_get_option(0, 'filetype')])
+
+  return items
+end
+
+
 
 -- Shamelessly stollen from https://github.com/mfussenegger/nvim-lsp-compl with small adaptations
-function M.lsp()
+function M.lsp(line, line_to_cursor, preffix, col)
   local params = lsp.util.make_position_params()
   local _, _ = lsp.buf_request(0, 'textDocument/completion', params, function(err, _, result, client_id)
     assert(not err, vim.inspect(err))
     if not result then return end
-
-    local cursor_pos = api.nvim_win_get_cursor(0)[2]
-    local line = api.nvim_get_current_line()
-    local line_to_cursor = line:sub(1, cursor_pos)
-    local col = vim.fn.match(line_to_cursor, '\\k*$') + 1
-    local preffix = line:sub(col, cursor_pos)
 
     local items = lsp.util.extract_completion_items(result)
     if not items or #items == 0 then return end
@@ -69,8 +98,11 @@ function M.lsp()
         })
       end
     end
+    for _,s in ipairs(get_luasnip(preffix)) do
+      table.insert(matches, s)
+    end
     table.sort(matches, function(a, b)
-      return (a.user_data.sortText or a.user_data.label) < (b.user_data.sortText or b.user_data.label)
+      return (a.word or a.abbr) < (b.word or b.abbr)
     end)
     vim.fn.complete(col, matches)
   end)
@@ -136,8 +168,19 @@ local function lsp_completedone(completed_item)
   end
 end
 
+function M.luasnip(_, _, preffix, col)
+  vim.fn.complete(col, get_luasnip(preffix))
+end
+
+local function luasnip_completedone(_)
+  if require'luasnip'.expandable() then
+    require'luasnip'.expand()
+  end
+end
+
 local complete_done_cbs = {
-  lsp = lsp_completedone
+  lsp = lsp_completedone,
+  luasnip = luasnip_completedone
 }
 
 function M._CompleteDone()
