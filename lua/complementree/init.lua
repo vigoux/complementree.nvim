@@ -1,5 +1,5 @@
 local api = vim.api
-local sources = require"completree.sources"
+local sources = require"complementree.sources"
 local M = {}
 
 local user_config = {
