@@ -98,9 +98,7 @@ function M.lsp(line, line_to_cursor, preffix, col)
         })
       end
     end
-    for _,s in ipairs(get_luasnip(preffix)) do
-      table.insert(matches, s)
-    end
+    vim.list_extend(matches, get_luasnip(preffix))
     table.sort(matches, function(a, b)
       return (a.word or a.abbr) < (b.word or b.abbr)
     end)
@@ -168,9 +166,15 @@ local function lsp_completedone(completed_item)
   end
 end
 
-function M.luasnip(_, _, preffix, col)
-  vim.fn.complete(col, get_luasnip(preffix))
+function M.wrap(func)
+  return function(line, line_to_cursor, preffix, col)
+    vim.fn.complete(col, func(line, line_to_cursor, preffix, col))
+  end
 end
+
+M.luasnip = M.wrap(function(_, _, preffix, _)
+  return get_luasnip(preffix)
+end)
 
 local function luasnip_completedone(_)
   if require'luasnip'.expandable() then
