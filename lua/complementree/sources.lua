@@ -52,11 +52,10 @@ local function get_luasnip(preffix)
 end
 
 
-
 -- Shamelessly stollen from https://github.com/mfussenegger/nvim-lsp-compl with small adaptations
 function M.lsp(line, line_to_cursor, preffix, col)
   local params = lsp.util.make_position_params()
-  local _, _ = lsp.buf_request(0, 'textDocument/completion', params, function(err, _, result, client_id)
+  local _, _ = lsp.buf_request(0, 'textDocument/completion', params, function(err, result, ctx)
     assert(not err, vim.inspect(err))
     if not result then return end
 
@@ -84,7 +83,7 @@ function M.lsp(line, line_to_cursor, preffix, col)
         word = (item.textEdit and item.textEdit.newText) or item.insertText or item.label
       end
       if vim.startswith(word, preffix) then
-        item.client_id = client_id
+        item.client_id = ctx.client_id
         item.source = 'lsp'
         table.insert(matches, {
           word = word,
@@ -148,7 +147,7 @@ local function lsp_completedone(completed_item)
       apply_snippet(item, suffix)
     end
   elseif resolveEdits and type(item) == "table" then
-    local _, _ = lsp.buf_request(0, 'completionItem/resolve', item, function(err, _, result)
+    local _, _ = lsp.buf_request(0, 'completionItem/resolve', item, function(err, result)
       assert(not err, vim.inspect(err))
       if result.additionalTextEdits then
         tidy()
