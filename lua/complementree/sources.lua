@@ -15,7 +15,7 @@ function M.dummy()
   -- Does nothing
 end
 
-local function get_luasnip(preffix)
+function M.luasnip_matches(_, _, preffix, _)
   local snippets = require'luasnip'.available()
 
   local items = {}
@@ -50,7 +50,7 @@ local function get_luasnip(preffix)
 end
 
 -- Shamelessly stollen from https://github.com/mfussenegger/nvim-lsp-compl with small adaptations
-function M.lsp(line, line_to_cursor, preffix, col)
+function M.lsp_matches(line, line_to_cursor, preffix, col)
   local params = lsp.util.make_position_params()
   local result_all, err = lsp.buf_request_sync(0, 'textDocument/completion', params)
   assert(not err, vim.inspect(err))
@@ -95,12 +95,7 @@ function M.lsp(line, line_to_cursor, preffix, col)
       end
     end
   end
-  vim.list_extend(matches, get_luasnip(preffix))
-  table.sort(matches, function(a, b)
-    return (a.word or a.abbr) < (b.word or b.abbr)
-  end)
-  vim.fn.complete(col, matches)
-  return true
+  return matches
 end
 
 local function apply_snippet(item, suffix)
@@ -162,10 +157,25 @@ local function lsp_completedone(completed_item)
   end
 end
 
+-- Combinators
+
+function M.preffix_guard(source)
+  return function(line, ltc, preffix, col)
+    if #preffix > 1 then
+      return source(line, ltc, preffix, col)
+    else
+      return false
+    end
+  end
+end
+
 function M.wrap(func)
   return function(line, line_to_cursor, preffix, col)
     local compl = func(line, line_to_cursor, preffix, col)
     if compl and #compl > 0 then
+      table.sort(compl, function(a, b)
+        return (a.word or a.abbr) < (b.word or b.abbr)
+      end)
       vim.fn.complete(col, func(line, line_to_cursor, preffix, col))
       return true
     else
@@ -174,9 +184,23 @@ function M.wrap(func)
   end
 end
 
-M.luasnip = M.wrap(function(_, _, preffix, _)
-  return get_luasnip(preffix)
-end)
+function M.combine(...)
+  local funcs = { ... }
+  return M.wrap(function(...)
+    local matches = {}
+    for _,f in pairs(funcs) do
+      local m = f(...)
+      vim.list_extend(matches, m)
+    end
+    return matches
+  end)
+end
+
+-- Defaults
+
+M.luasnip = M.wrap(M.luasnip_matches)
+
+M.lsp = M.wrap(M.lsp_matches)
 
 local function luasnip_completedone(_)
   if require'luasnip'.expandable() then
