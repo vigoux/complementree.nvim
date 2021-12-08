@@ -51,17 +51,17 @@ local function get_luasnip(preffix)
   return items
 end
 
-
 -- Shamelessly stollen from https://github.com/mfussenegger/nvim-lsp-compl with small adaptations
 function M.lsp(line, line_to_cursor, preffix, col)
   local params = lsp.util.make_position_params()
-  local _, _ = lsp.buf_request(0, 'textDocument/completion', params, function(err, result, ctx)
-    assert(not err, vim.inspect(err))
-    if not result then return end
+  local result_all, err = lsp.buf_request_sync(0, 'textDocument/completion', params)
+  assert(not err, vim.inspect(err))
+  if not result_all then return end
 
-    local items = lsp.util.extract_completion_items(result)
+  local matches = {}
+  for client_id,result in pairs(result_all) do
+    local items = lsp.util.extract_completion_items(result.result)
     if not items or #items == 0 then return end
-    local matches = {}
     for _, item in pairs(items) do
       local kind = lsp.protocol.CompletionItemKind[item.kind] or ''
       local word
@@ -82,8 +82,9 @@ function M.lsp(line, line_to_cursor, preffix, col)
       else
         word = (item.textEdit and item.textEdit.newText) or item.insertText or item.label
       end
+      print(word, preffix)
       if vim.startswith(word, preffix) then
-        item.client_id = ctx.client_id
+        item.client_id = client_id
         item.source = 'lsp'
         table.insert(matches, {
           word = word,
@@ -101,8 +102,8 @@ function M.lsp(line, line_to_cursor, preffix, col)
     table.sort(matches, function(a, b)
       return (a.word or a.abbr) < (b.word or b.abbr)
     end)
-    vim.fn.complete(col, matches)
-  end)
+  end
+  vim.fn.complete(col, matches)
 end
 
 local function apply_snippet(item, suffix)
@@ -147,18 +148,17 @@ local function lsp_completedone(completed_item)
       apply_snippet(item, suffix)
     end
   elseif resolveEdits and type(item) == "table" then
-    local _, _ = lsp.buf_request(0, 'completionItem/resolve', item, function(err, result)
-      assert(not err, vim.inspect(err))
-      if result.additionalTextEdits then
-        tidy()
-        tidy = function() end
-        lsp.util.apply_text_edits(result.additionalTextEdits, bufnr)
-      end
-      if expand_snippet then
-        tidy()
-        apply_snippet(item, suffix)
-      end
-    end)
+    local v = client.request_sync('completionItem/resolve', item, 1000, bufnr)
+    assert(not v.err, vim.inspect(v.err))
+    if v.result.additionalTextEdits then
+      tidy()
+      tidy = function() end
+      lsp.util.apply_text_edits(v.result.additionalTextEdits, bufnr)
+    end
+    if expand_snippet then
+      tidy()
+      apply_snippet(item, suffix)
+    end
   elseif expand_snippet then
     tidy()
     apply_snippet(item, suffix)
