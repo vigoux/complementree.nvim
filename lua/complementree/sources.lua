@@ -79,7 +79,7 @@ function M.lsp_matches(line, line_to_cursor, preffix, col)
       else
         word = (item.textEdit and item.textEdit.newText) or item.insertText or item.label
       end
-      if vim.startswith(word, preffix) and word ~= preffix then
+      if vim.startswith(word, preffix) then
         item.client_id = client_id
         item.source = 'lsp'
         table.insert(matches, {
