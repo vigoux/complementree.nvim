@@ -34,19 +34,20 @@ function M.complete()
   if ft_completion then
     if type(ft_completion) == "table" then
       local ok, tsutils = pcall(require, "nvim-treesitter.ts_utils")
-      if not ok then return end
+      if not ok then return false end
 
       local node = tsutils.get_node_at_cursor()
-      if not node then return end
+      if not node then return false end
 
       local sub_completion = ft_completion[node:type()] or ft_completion.default
       if sub_completion then
-        sub_completion(line, line_to_cursor, preffix, col)
+        return sub_completion(line, line_to_cursor, preffix, col)
       end
     elseif type(ft_completion) == "function" then
-      ft_completion(line, line_to_cursor, preffix, col)
+      return ft_completion(line, line_to_cursor, preffix, col)
     end
   end
+  return false
 end
 
 return M

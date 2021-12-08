@@ -10,6 +10,7 @@ function M.ins_completion(mode)
       "m",
       true
     )
+    return true
   end
 end
 
@@ -102,6 +103,7 @@ function M.lsp(line, line_to_cursor, preffix, col)
     return (a.word or a.abbr) < (b.word or b.abbr)
   end)
   vim.fn.complete(col, matches)
+  return true
 end
 
 local function apply_snippet(item, suffix)
@@ -165,7 +167,13 @@ end
 
 function M.wrap(func)
   return function(line, line_to_cursor, preffix, col)
-    vim.fn.complete(col, func(line, line_to_cursor, preffix, col))
+    local compl = func(line, line_to_cursor, preffix, col)
+    if compl and #compl > 0 then
+      vim.fn.complete(col, func(line, line_to_cursor, preffix, col))
+      return true
+    else
+      return false
+    end
   end
 end
 
