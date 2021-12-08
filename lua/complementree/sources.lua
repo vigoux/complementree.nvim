@@ -1,16 +1,13 @@
 local M = {}
 
+local utils = require'complementree.utils'
 local api = vim.api
 local lsp = vim.lsp
 
 function M.ins_completion(mode)
   return function()
-    api.nvim_feedkeys(
-      api.nvim_replace_termcodes(string.format("<C-X><%s>", mode), true, true, true),
-      "m",
-      true
-    )
-    return true
+    utils.feed(string.format("<C-X><%s>", mode))
+    return vim.fn.pumvisible() == 1
   end
 end
 
