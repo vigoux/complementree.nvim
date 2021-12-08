@@ -61,8 +61,7 @@ function M.lsp(line, line_to_cursor, preffix, col)
   local matches = {}
   for client_id,result in pairs(result_all) do
     local items = lsp.util.extract_completion_items(result.result)
-    if not items or #items == 0 then return end
-    for _, item in pairs(items) do
+    for _, item in pairs(items or {}) do
       local kind = lsp.protocol.CompletionItemKind[item.kind] or ''
       local word
       if kind == 'Snippet' then
@@ -97,11 +96,11 @@ function M.lsp(line, line_to_cursor, preffix, col)
         })
       end
     end
-    vim.list_extend(matches, get_luasnip(preffix))
-    table.sort(matches, function(a, b)
-      return (a.word or a.abbr) < (b.word or b.abbr)
-    end)
   end
+  vim.list_extend(matches, get_luasnip(preffix))
+  table.sort(matches, function(a, b)
+    return (a.word or a.abbr) < (b.word or b.abbr)
+  end)
   vim.fn.complete(col, matches)
 end
 
