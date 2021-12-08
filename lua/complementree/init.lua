@@ -19,6 +19,8 @@ function M.print_config()
 end
 
 function M.complete()
+  if not vim.fn.mode():find('i') then return false end
+
   local bufnr = api.nvim_get_current_buf()
   local ft = api.nvim_buf_get_option(bufnr, "filetype")
 
