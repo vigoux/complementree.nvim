@@ -21,13 +21,13 @@ end
 
 function M.combine(...)
   local funcs = { ... }
-  return function(...)
+  return function(line, ltc, preffix, col)
     local matches = {}
     for _,f in pairs(funcs) do
-      local m = f(...)
+      local m = f(line, ltc, preffix, col)
       vim.list_extend(matches, m)
     end
-    return matches
+    return complete(col, matches)
   end
 end
 
