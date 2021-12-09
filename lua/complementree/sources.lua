@@ -19,18 +19,16 @@ function M.luasnip_matches(_, _, preffix, _)
   --  wordTrig = bool
   -- }
   local function add_snippet(s)
-    if vim.startswith(s.trigger, preffix) then
-      table.insert(items, {
-        word = s.trigger,
-        abbr = s.name,
-        kind = "S",
-        menu = table.concat(s.description or {}),
-        icase = 1,
-        dup = 1,
-        empty = 1,
-        user_data = { source = "luasnip" }
-      })
-    end
+    table.insert(items, {
+      word = s.trigger,
+      abbr = s.name,
+      kind = "S",
+      menu = table.concat(s.description or {}),
+      icase = 1,
+      dup = 1,
+      empty = 1,
+      user_data = { source = "luasnip" }
+    })
   end
 
   vim.tbl_map(add_snippet, snippets.all)
@@ -69,20 +67,18 @@ function M.lsp_matches(line, line_to_cursor, preffix, col)
       else
         word = (item.textEdit and item.textEdit.newText) or item.insertText or item.label
       end
-      if vim.startswith(word, preffix) then
-        item.client_id = client_id
-        item.source = 'lsp'
-        table.insert(matches, {
-          word = word,
-          abbr = item.label,
-          kind = kind,
-          menu = item.detail or '',
-          icase = 1,
-          dup = 1,
-          empty = 1,
-          user_data = item
-        })
-      end
+      item.client_id = client_id
+      item.source = 'lsp'
+      table.insert(matches, {
+        word = word,
+        abbr = item.label,
+        kind = kind,
+        menu = item.detail or '',
+        icase = 1,
+        dup = 1,
+        empty = 1,
+        user_data = item
+      })
     end
   end
   return matches
