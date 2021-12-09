@@ -62,3 +62,17 @@ function as input:
   of the candidates is different from the preffix.
 - `wrap`: triggers the completion using this matches function. You can
   see usages in the [sources file](./lua/complementree/sources.lua).
+
+The currently implemented matches functions are:
+- `lsp_matches`: for lsp-only matches
+- `luasnip_matches`: for LuaSnip matches.
+
+Using combinators, you can complete using LSP + LuaSnip with the
+following:
+
+```lua
+local s = require"complementree.sources"
+local cc = require"complementree.combinators"
+
+lsp_and_luasnip = cc.combine(s.luasnip_matches, s.lsp_matches)
+```
