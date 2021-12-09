@@ -1,19 +1,9 @@
 local M = {}
 
 local utils = require'complementree.utils'
+local comb = require'complementree.combinators'
 local api = vim.api
 local lsp = vim.lsp
-
-function M.ins_completion(mode)
-  return function()
-    utils.feed(string.format("<C-X><%s>", mode))
-    return vim.fn.pumvisible() == 1
-  end
-end
-
-function M.dummy()
-  -- Does nothing
-end
 
 function M.luasnip_matches(_, _, preffix, _)
   local snippets = require'luasnip'.available()
@@ -157,50 +147,24 @@ local function lsp_completedone(completed_item)
   end
 end
 
--- Combinators
-
-function M.preffix_guard(source)
-  return function(line, ltc, preffix, col)
-    if #preffix > 1 then
-      return source(line, ltc, preffix, col)
-    else
-      return false
-    end
-  end
-end
-
-function M.wrap(func)
-  return function(line, line_to_cursor, preffix, col)
-    local compl = func(line, line_to_cursor, preffix, col)
-    if compl and #compl > 0 then
-      table.sort(compl, function(a, b)
-        return (a.word or a.abbr) < (b.word or b.abbr)
-      end)
-      vim.fn.complete(col, func(line, line_to_cursor, preffix, col))
-      return true
-    else
-      return false
-    end
-  end
-end
-
-function M.combine(...)
-  local funcs = { ... }
-  return M.wrap(function(...)
-    local matches = {}
-    for _,f in pairs(funcs) do
-      local m = f(...)
-      vim.list_extend(matches, m)
-    end
-    return matches
-  end)
-end
-
 -- Defaults
 
-M.luasnip = M.wrap(M.luasnip_matches)
+function M.ins_completion(mode)
+  return function()
+    utils.feed(string.format("<C-X><%s>", mode))
+    return vim.fn.pumvisible() == 1
+  end
+end
 
-M.lsp = M.wrap(M.lsp_matches)
+function M.dummy()
+  -- Does nothing
+end
+
+M.luasnip = comb.wrap(M.luasnip_matches)
+
+M.lsp = comb.wrap(M.lsp_matches)
+
+-- CompleteDone handlers
 
 local function luasnip_completedone(_)
   if require'luasnip'.expandable() then
