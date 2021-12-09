@@ -4,7 +4,7 @@ local ccomp = require'complementree.comparators'
 local filter = require'complementree.filters'
 local utils = require'complementree.utils'
 
-local function complete(col, matches, preffix, comparator, filterf)
+local function filter_sort(matches, preffix, comparator, filterf)
   local filtered = {}
   for i,v in ipairs(matches) do
     if filterf(i, v, preffix) then
@@ -12,16 +12,22 @@ local function complete(col, matches, preffix, comparator, filterf)
     end
   end
   local cmp_cache = {}
+  table.sort(filtered, function(a,b)
+    local key = {a, b}
+
+    if not cmp_cache[key] then
+      cmp_cache[key] = comparator(a, b, preffix)
+    end
+
+    return cmp_cache[key]
+  end)
+
+  return filtered
+end
+
+local function complete(col, matches, preffix, comparator, filterf)
+  local filtered = filter_sort(matches, preffix, comparator, filterf)
   if filtered and #filtered > 0 then
-    table.sort(filtered, function(a,b)
-      local key = {a, b}
-
-      if not cmp_cache[key] then
-        cmp_cache[key] = comparator(a, b, preffix)
-      end
-
-      return cmp_cache[key]
-    end)
     vim.fn.complete(col, filtered)
     return true
   else
@@ -48,6 +54,20 @@ function M.combine(...)
       vim.list_extend(matches, m)
     end
     return matches
+  end
+end
+
+function M.optional(mandat, opt, comparator, filterf)
+  -- TODO(vigoux): optimize this a bit, as we will filter/sort the mandatory results twice
+  return function(line, ltc, preffix, col)
+    local matches = mandat(line, ltc, preffix, col)
+    matches = filter_sort(matches, preffix, comparator or ccomp.alphabetic, filterf or filter.preffix)
+    if #matches > 0 then
+      vim.list_extend(matches, opt(line, ltc, preffix, col))
+      return complete(col, matches, preffix, comparator, filterf)
+    else
+      return false
+    end
   end
 end
 

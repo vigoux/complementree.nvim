@@ -55,11 +55,11 @@ There is a few combinators already existing, that take a _matches_
 function as input:
 
 - `combine`: just concatenates the results of multiple matches
-  functions
+  functions, returns a _matches_ function
 - `non_empty_preffix`: checks that the preffix is non-empty before
   triggering completion
-- `strictly_different`: triggers the completion only if at least one
-  of the candidates is different from the preffix.
+- `optional`: takes two _matches_ functions, and triggers the second
+  one only if the first one returns at least one result
 - `wrap`: triggers the completion using this matches function. You can
   see usages in the [sources file](./lua/complementree/sources.lua).
 
