@@ -5,7 +5,8 @@ by tree-sitter.
 
 ## Installation
 
-This plugin does not have any dependency.
+This plugin does not have any dependency, but `LuaSnip` is
+recommended.
 
 ```lua
 use 'vigoux/complementree.nvim'
@@ -38,3 +39,20 @@ comp.setup {
 
 We define a set of `sources` that are triggered when calling the
 `complementree.complete()` function.
+
+## Combining sources
+
+You can combine the matches of sources using things called
+_combinators_.
+
+There is a few combinators already existing, that take a _matches_
+function as input:
+
+- `combine`: just concatenates the results of multiple matches
+  functions
+- `non_empty_preffix`: checks that the preffix is non-empty before
+  triggering completion
+- `strictly_different`: triggers the completion only if at least one
+  of the candidates is different from the preffix.
+- `wrap`: triggers the completion using this matches function. You can
+  see usages in the [sources file](./lua/complementree/sources.lua).
