@@ -4,10 +4,10 @@ local ccomp = require'complementree.comparators'
 local filter = require'complementree.filters'
 local utils = require'complementree.utils'
 
-local function complete(col, matches, preffix, comparator, filter)
+local function complete(col, matches, preffix, comparator, filterf)
   local filtered = {}
   for i,v in ipairs(matches) do
-    if filter(i, v, preffix) then
+    if filterf(i, v, preffix) then
       table.insert(filtered, v)
     end
   end

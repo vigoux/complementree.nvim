@@ -28,9 +28,4 @@ if ok_fzy then
   end
 end
 
-local function this_is_a_test()
-  -- foobar
-  print'boo'
-end
-
 return M

@@ -7,17 +7,13 @@ function M.amount(n)
   end
 end
 
-function M.preffix()
-  return function(_, v, preffix)
-    return vim.startswith(utils.cword(v), preffix)
-  end
+function M.preffix(_, v, preffix)
+  return vim.startswith(utils.cword(v), preffix)
 end
 
-function M.strict_preffix()
-  return function(_, v, preffix)
-    local w = utils.cword(v)
-    return vim.startswith(w, preffix) and #w ~= #preffix
-  end
+function M.strict_preffix(_, v, preffix)
+  local w = utils.cword(v)
+  return vim.startswith(w, preffix) and #w ~= #preffix
 end
 
 return M
