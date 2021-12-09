@@ -40,6 +40,12 @@ comp.setup {
 We define a set of `sources` that are triggered when calling the
 `complementree.complete()` function.
 
+The default sources are:
+- `lsp`: lsp-only source, with LSP snippets enabled
+- `luasnip`: luasnip snippets
+- `dummy`: nothing
+- `ins_completion`: trigger a `<C-X><C-*>` completion
+
 ## Combining sources
 
 You can combine the matches of sources using things called
