@@ -9,7 +9,7 @@ This plugin does not have any dependency, but `LuaSnip` is
 recommended.
 
 ```lua
-use {'vigoux/complementree.nvim', requires = 'L3MON4D3/LuaSnip' }
+use {'vigoux/complementree.nvim', requires = {'L3MON4D3/LuaSnip', 'nvim-treesitter/nvim-treesitter'} }
 ```
 
 ## Setting up
