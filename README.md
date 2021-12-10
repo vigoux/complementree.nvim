@@ -114,7 +114,7 @@ combinators.pipeline(sources.lsp_matches, comparators.fzy, filters.amount(6))
 
 Fuzzy LSP and LuaSnip only if lsp returns something:
 ```lua
-combinators.pipeline(combinators.optional(source.lsp_matches, source.luasnip_matches), comparators,fzy, filters.amount(6))
+combinators.pipeline(combinators.optional(source.lsp_matches, source.luasnip_matches), comparators.fzy, filters.amount(6))
 ```
 
 Look in the [defaults file](./lua/complementree/defaults.lua) for
