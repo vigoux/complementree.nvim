@@ -1,7 +1,13 @@
 # Complementree.nvim: a tree-sitter powered completion framework
 
-This plugin is a _completion framework_ built for neovim, and powered
-by tree-sitter.
+A tree-sitter powered _completion framework_ built for neovim,
+configured with functions.
+
+Features and design goals:
+- Synchronous
+- Configured using functions
+- Syntax-aware completion
+- No autocompletion
 
 ## Installation
 
@@ -45,6 +51,9 @@ The defaults are:
 - `luasnip`: luasnip snippets
 - `dummy`: nothing
 - `ins_completion`: trigger a `<C-X><C-*>` completion
+
+After calling the `setup` function, you can trigger completion by
+calling `complementree.complete()`.
 
 ## Combining sources
 
