@@ -143,23 +143,6 @@ local function lsp_completedone(completed_item)
   end
 end
 
--- Defaults
-
-function M.ins_completion(mode)
-  return function()
-    utils.feed(string.format("<C-X><%s>", mode))
-    return vim.fn.pumvisible() == 1
-  end
-end
-
-function M.dummy()
-  -- Does nothing
-end
-
-M.luasnip = comb.wrap(M.luasnip_matches)
-
-M.lsp = comb.wrap(M.lsp_matches)
-
 -- CompleteDone handlers
 
 local function luasnip_completedone(_)

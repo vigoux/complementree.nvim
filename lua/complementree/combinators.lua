@@ -25,23 +25,12 @@ local function filter_sort(matches, preffix, comparator, filterf)
   return filtered
 end
 
-local function complete(col, matches, preffix, comparator, filterf)
-  local filtered = filter_sort(matches, preffix, comparator, filterf)
-  if filtered and #filtered > 0 then
-    vim.fn.complete(col, filtered)
+local function complete(col, matches)
+  if matches and #matches > 0 then
+    vim.fn.complete(col, matches)
     return true
   else
     return false
-  end
-end
-
-local function desc_to_msource(desc)
-  if type(desc) == 'table' and desc.matches then
-    return desc.matches, desc.comparator or ccomp.alphabetic, desc.filter or filter.preffix
-  elseif type(desc) == 'function' then
-    return desc, ccomp.alphabetic, filter.preffix
-  else
-    error('Invalid description')
   end
 end
 
@@ -57,37 +46,42 @@ function M.combine(...)
   end
 end
 
-function M.optional(mandat, opt, comparator, filterf)
-  -- TODO(vigoux): optimize this a bit, as we will filter/sort the mandatory results twice
+function M.optional(mandat, opt)
   return function(line, ltc, preffix, col)
     local matches = mandat(line, ltc, preffix, col)
-    matches = filter_sort(matches, preffix, comparator or ccomp.alphabetic, filterf or filter.preffix)
     if #matches > 0 then
       vim.list_extend(matches, opt(line, ltc, preffix, col))
-      return complete(col, matches, preffix, comparator, filterf)
+      return matches
     else
-      return false
+      return {}
     end
   end
 end
 
-function M.non_empty_preffix(desc)
-  local func, comparator, filterf = desc_to_msource(desc)
+function M.non_empty_preffix(func)
   return function(line, ltc, preffix, col)
     if #preffix > 1 then
-      return complete(col, func(line, ltc, preffix, col), preffix, comparator, filterf)
+      return complete(col, func(line, ltc, preffix, col))
     else
       return false
     end
   end
 end
 
-function M.wrap(desc)
-  local func, comparator, filterf = desc_to_msource(desc)
+function M.wrap(func)
   return function(line, line_to_cursor, preffix, col)
     local compl = func(line, line_to_cursor, preffix, col)
-    return complete(col, compl, preffix, comparator, filterf)
+    return complete(col, compl)
   end
+end
+
+function M.pipeline(source, ...)
+  local current = source
+  for _,func in ipairs { ... } do
+    current = func(current)
+  end
+
+  return M.wrap(current)
 end
 
 return M

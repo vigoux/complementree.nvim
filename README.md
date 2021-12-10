@@ -20,7 +20,7 @@ following:
 
 ```lua
 local comp = require"complementree"
-local s = require"complementree.sources"
+local s = require"complementree.defaults"
 
 local lsp_completion = {
   default = s.lsp,
@@ -40,7 +40,7 @@ comp.setup {
 We define a set of `sources` that are triggered when calling the
 `complementree.complete()` function.
 
-The default sources are:
+The defaults are:
 - `lsp`: lsp-only source, with LSP snippets enabled
 - `luasnip`: luasnip snippets
 - `dummy`: nothing
@@ -60,8 +60,7 @@ function as input:
   triggering completion
 - `optional`: takes two _matches_ functions, and triggers the second
   one only if the first one returns at least one result
-- `wrap`: triggers the completion using this matches function. You can
-  see usages in the [sources file](./lua/complementree/sources.lua).
+- `wrap`: triggers the completion using this matches function.
 
 The currently implemented matches functions are:
 - `lsp_matches`: for lsp-only matches
@@ -76,3 +75,47 @@ local cc = require"complementree.combinators"
 
 lsp_and_luasnip = cc.combine(s.luasnip_matches, s.lsp_matches)
 ```
+
+## Filtering and sorting results
+
+There are two special types of combinators: filters and comparators.
+
+They simply change the order and filter the completion results, and
+there are quite a bunch of them.
+
+### Filters
+
+- `preffix`: only keep suggestions that start with the current written
+  word
+- `strict_preffix`: same as `preffix` but be a strict preffix
+  (different thant written word)
+- `amount(n)`: only take the first `n` suggestions
+
+### Comparators
+
+- `alphabetic`: sort results alphabetically
+- `length`: sort results by length
+If you have `romgrk/fzy-lua-native` installed, there will also be:
+- `fzy`: sort based on the fuzzy score (case sensitive)
+- `ifzy`: case insensitive version
+
+## Utilities
+
+A threading-macro-like function in also provided for convenience,
+which looks line `combinators.pipeline(source, ...)` and just applies
+all combinators in the `...` one by one.
+
+## Examples
+
+Fuzzy LSP:
+```lua
+combinators.pipeline(sources.lsp_matches, comparators.fzy, filters.amount(6))
+```
+
+Fuzzy LSP and LuaSnip only if lsp returns something:
+```lua
+combinators.pipeline(combinators.optional(source.lsp_matches, source.luasnip_matches), comparators,fzy, filters.amount(6))
+```
+
+Look in the [defaults file](./lua/complementree/defaults.lua) for
+more.

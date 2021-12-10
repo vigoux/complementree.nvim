@@ -1,11 +1,11 @@
 local api = vim.api
-local sources = require"complementree.sources"
+local defaults = require"complementree.defaults"
 local utils = require"complementree.utils"
 local M = {}
 
 local user_config = {
-  default = sources.dummy,
-  vim = sources.ins_completion "C-V"
+  default = defaults.dummy,
+  vim = defaults.ins_completion "C-V"
 }
 
 function M.setup(config)
