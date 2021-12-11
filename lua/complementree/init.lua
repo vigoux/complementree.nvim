@@ -1,6 +1,7 @@
 local api = vim.api
 local defaults = require"complementree.defaults"
 local utils = require"complementree.utils"
+local sources = require'complementree.sources'
 local M = {}
 
 local user_config = {
@@ -34,6 +35,10 @@ local function node_type_at_cursor(line_to_cursor, linenr)
 end
 
 function M.complete()
+  -- Only refresh when not restarting
+  if vim.fn.pumvisible() == 0 then
+    sources.invalidate_cache()
+  end
   if not vim.fn.mode():find('i') then return false end
 
   local bufnr = api.nvim_get_current_buf()
@@ -61,4 +66,31 @@ function M.complete()
   return false
 end
 
+function M._CompleteDone()
+  local completed_item = api.nvim_get_vvar('completed_item')
+  if not completed_item
+     or not completed_item.user_data
+     or not completed_item.user_data.source then return end
+  local func = sources.complete_done_cbs[completed_item.user_data.source]
+  if func then
+    func(completed_item)
+  end
+end
+
+function M._InsertCharPre()
+  if vim.fn.pumvisible() == 1 then
+    local char = api.nvim_get_vvar 'char'
+    if char:find"%s" then
+      -- Whitespace, so accept this choice and stop here
+      utils.feed '<C-Y>'
+    else
+      -- Refresh completion after this char is inserted
+      vim.schedule(function()
+        M.complete()
+      end)
+    end
+  end
+end
+
 return M
+

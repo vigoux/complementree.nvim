@@ -13,5 +13,4 @@ function M.cword(complete_item)
   return (complete_item.word or complete_item.abbr)
 end
 
-
 return M

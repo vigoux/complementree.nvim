@@ -5,7 +5,22 @@ local comb = require'complementree.combinators'
 local api = vim.api
 local lsp = vim.lsp
 
-function M.luasnip_matches(_, _, preffix, _)
+local cache = {}
+
+function M.invalidate_cache()
+  cache = {}
+end
+
+local function cached(kind, func)
+  return function(...)
+    if not cache[kind] then
+      cache[kind] = func(...)
+    end
+    return vim.deepcopy(cache[kind])
+  end
+end
+
+M.luasnip_matches = cached('luasnip', function(_, _, preffix, _)
   local snippets = require'luasnip'.available()
 
   local items = {}
@@ -35,10 +50,10 @@ function M.luasnip_matches(_, _, preffix, _)
   vim.tbl_map(add_snippet, snippets[api.nvim_buf_get_option(0, 'filetype')])
 
   return items
-end
+end)
 
 -- Shamelessly stollen from https://github.com/mfussenegger/nvim-lsp-compl with small adaptations
-function M.lsp_matches(line, line_to_cursor, preffix, col)
+M.lsp_matches = cached('lsp', function(line, line_to_cursor, preffix, col)
   local params = lsp.util.make_position_params()
   local result_all, err = lsp.buf_request_sync(0, 'textDocument/completion', params)
   assert(not err, vim.inspect(err))
@@ -82,7 +97,7 @@ function M.lsp_matches(line, line_to_cursor, preffix, col)
     end
   end
   return matches
-end
+end)
 
 local function apply_snippet(item, suffix)
   local luasnip = require"luasnip"
@@ -151,20 +166,9 @@ local function luasnip_completedone(_)
   end
 end
 
-local complete_done_cbs = {
+M.complete_done_cbs = {
   lsp = lsp_completedone,
   luasnip = luasnip_completedone
 }
-
-function M._CompleteDone()
-  local completed_item = api.nvim_get_vvar('completed_item')
-  if not completed_item
-     or not completed_item.user_data
-     or not completed_item.user_data.source then return end
-  local func = complete_done_cbs[completed_item.user_data.source]
-  if func then
-    func(completed_item)
-  end
-end
 
 return M
