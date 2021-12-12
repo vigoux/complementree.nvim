@@ -2,6 +2,7 @@ local api = vim.api
 local defaults = require"complementree.defaults"
 local utils = require"complementree.utils"
 local sources = require'complementree.sources'
+local tsutils = require'nvim-treesitter.ts_utils'
 local M = {}
 
 local user_config = {
@@ -20,26 +21,49 @@ function M.print_config()
   print(vim.inspect(user_config))
 end
 
-local function node_type_at_cursor(line_to_cursor, linenr)
-  local ok, tsutils = pcall(require, "nvim-treesitter.ts_utils")
-  if not ok then return end
-
+local function correct_position(line_to_cursor, linenr)
   local col = vim.fn.match(line_to_cursor, '\\s*\\k*$')
-  local root = tsutils.get_root_for_position(linenr, col)
+  return linenr - 1, col - 1
+end
+
+local function node_type_at_cursor(l, c)
+  local root = tsutils.get_root_for_position(l, c)
   if not root then return end
 
-  local node = root:named_descendant_for_range(linenr - 1, col - 1, linenr - 1, col - 1)
+  local node = root:named_descendant_for_range(l, c, l, c)
   if not node then return end
 
   return node:type()
 end
 
-local function get_completion(ft, line_to_cursor, lnum)
+local function get_completion(ft, line_to_cursor, lnum, col)
+  local l, c = correct_position(line_to_cursor, lnum)
   local ft_completion = user_config[ft] or user_config.default
   if ft_completion then
     if type(ft_completion) == "table" then
-      -- TODO(vigoux): make query-based completion parameters
-      local t = node_type_at_cursor(line_to_cursor, lnum)
+      local root = tsutils.get_root_for_position(l, c)
+      -- Before attempting to match the node type, try query based filters
+      for q,sub in pairs(ft_completion) do
+        -- Queries always start with a parenthesis
+        if vim.startswith(q, '(') then
+          local query = vim.treesitter.parse_query(ft, q)
+          for id, node in query:iter_captures(root, 0, l, l + 1) do
+            local cname = query.captures[id]
+            if tsutils.is_in_node_range(node, l, c) then
+              if type(sub) == "table" and sub[cname] then
+                return sub[cname]
+              elseif type(sub) == "function" then
+                return sub
+              else
+                -- We will definitely not be able to do anything with this source
+                break
+              end
+            end
+          end
+        end
+      end
+
+      local t = node_type_at_cursor(l, c)
       if not t then return end
       local sub_completion = ft_completion[t] or ft_completion.default
       if sub_completion then
@@ -70,7 +94,7 @@ function M.complete()
   -- The source signature is
   -- line_content, line_content_up_to_cursor, preffix, column
 
-  local func = get_completion(ft, line_to_cursor, lnum)
+  local func = get_completion(ft, line_to_cursor, lnum, col)
   if func then
     return func(line, line_to_cursor, preffix, col)
   else
@@ -105,4 +129,3 @@ function M._InsertCharPre()
 end
 
 return M
-
