@@ -16,7 +16,11 @@ local function cached(kind, func)
     if not cache[kind] then
       cache[kind] = func(...)
     end
-    return vim.deepcopy(cache[kind])
+    local new = {}
+    for _,v in pairs(cache[kind]) do
+      table.insert(new, v)
+    end
+    return new
   end
 end
 
