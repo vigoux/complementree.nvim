@@ -30,21 +30,29 @@ end)
 
 local ok_fzy, fzy = pcall(require, 'fzy-lua-native')
 if ok_fzy then
-  M.fzy = mk_comparator(function(a, b, prefix)
-    if prefix ~= nil then
-      return fzy.score(prefix, a, false) > fzy.score(prefix, b, false)
-    else
-      return a < b
-    end
-  end)
 
-  M.ifzy = mk_comparator(function(a, b, prefix)
-    if prefix ~= nil then
-      return fzy.score(prefix, a, true) > fzy.score(prefix, b, true)
-    else
-      return a < b
+  local function mk_fzy(is_case_sensitive)
+    return function(msource)
+      return function(line, ltc, preffix, col)
+        local orig = msource(line, ltc, preffix, col)
+        local scores = {}
+        local matching = {}
+        for _,a in ipairs(orig) do
+          local s = fzy.score(preffix, utils.cword(a), is_case_sensitive)
+          if math.abs(s) ~= math.huge then
+            scores[a] = s
+            table.insert(matching, a)
+          end
+        end
+        table.sort(matching, function(a,b)
+          return scores[a] > scores[b]
+        end)
+        return matching
+      end
     end
-  end)
+  end
+  M.fzy = mk_fzy(false)
+  M.ifzy = mk_fzy(true)
 end
 
 return M
