@@ -89,14 +89,14 @@ function M.complete()
   local lnum, cursor_pos = unpack(api.nvim_win_get_cursor(0))
   local line_to_cursor = line:sub(1, cursor_pos)
   local col = vim.fn.match(line_to_cursor, '\\k*$') + 1
-  local preffix = line:sub(col, cursor_pos)
+  local prefix = line:sub(col, cursor_pos)
 
   -- The source signature is
-  -- line_content, line_content_up_to_cursor, preffix, column
+  -- line_content, line_content_up_to_cursor, prefix, column
 
   local func = get_completion(ft, line_to_cursor, lnum, col)
   if func then
-    return func(line, line_to_cursor, preffix, col)
+    return func(line, line_to_cursor, prefix, col)
   else
     return false
   end

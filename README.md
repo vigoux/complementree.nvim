@@ -62,7 +62,7 @@ function as input:
 
 - `combine`: just concatenates the results of multiple matches
   functions, returns a _matches_ function
-- `non_empty_preffix`: checks that the preffix is non-empty before
+- `non_empty_prefix`: checks that the prefix is non-empty before
   triggering completion
 - `optional`: takes two _matches_ functions, and triggers the second
   one only if the first one returns at least one result
@@ -91,10 +91,10 @@ there are quite a bunch of them.
 
 ### Filters
 
-- `preffix`: only keep suggestions that start with the current written
+- `prefix`: only keep suggestions that start with the current written
   word
-- `strict_preffix`: same as `preffix` but be a strict preffix
-  (different thant written word)
+- `strict_prefix`: same as `prefix` but be a strict prefix
+  (different than written word)
 - `amount(n)`: only take the first `n` suggestions
 
 ### Comparators

@@ -3,14 +3,14 @@ local M = {}
 
 local function mk_comparator(func)
   return function(msource)
-    return function(line, ltc, preffix, col)
-      local orig = msource(line, ltc, preffix, col)
+    return function(line, ltc, prefix, col)
+      local orig = msource(line, ltc, prefix, col)
       local cmp_cache = {}
       table.sort(orig, function(a,b)
         local key = {a, b}
 
         if not cmp_cache[key] then
-          cmp_cache[key] = func(utils.cword(a), utils.cword(b), preffix)
+          cmp_cache[key] = func(utils.cword(a), utils.cword(b), prefix)
         end
 
         return cmp_cache[key]
@@ -33,12 +33,12 @@ if ok_fzy then
 
   local function mk_fzy(is_case_sensitive)
     return function(msource)
-      return function(line, ltc, preffix, col)
-        local orig = msource(line, ltc, preffix, col)
+      return function(line, ltc, prefix, col)
+        local orig = msource(line, ltc, prefix, col)
         local scores = {}
         local matching = {}
         for _,a in ipairs(orig) do
-          local s = fzy.score(preffix, utils.cword(a), is_case_sensitive)
+          local s = fzy.score(prefix, utils.cword(a), is_case_sensitive)
           if math.abs(s) ~= math.huge then
             scores[a] = s
             table.insert(matching, a)
