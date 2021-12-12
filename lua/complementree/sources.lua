@@ -24,7 +24,7 @@ local function cached(kind, func)
   end
 end
 
-M.luasnip_matches = cached('luasnip', function(_, _, preffix, _)
+M.luasnip_matches = cached('luasnip', function(_, _, _, _)
   local snippets = require'luasnip'.available()
 
   local items = {}
@@ -57,7 +57,7 @@ M.luasnip_matches = cached('luasnip', function(_, _, preffix, _)
 end)
 
 -- Shamelessly stollen from https://github.com/mfussenegger/nvim-lsp-compl with small adaptations
-M.lsp_matches = cached('lsp', function(line, line_to_cursor, preffix, col)
+M.lsp_matches = cached('lsp', function(_, _, _, _)
   local params = lsp.util.make_position_params()
   local result_all, err = lsp.buf_request_sync(0, 'textDocument/completion', params)
   assert(not err, vim.inspect(err))

@@ -50,6 +50,9 @@ function M.complete()
   local col = vim.fn.match(line_to_cursor, '\\k*$') + 1
   local preffix = line:sub(col, cursor_pos)
 
+  -- The source signature is
+  -- line_content, line_content_up_to_cursor, preffix, column
+
   local ft_completion = user_config[ft] or user_config.default
   if ft_completion then
     if type(ft_completion) == "table" then
