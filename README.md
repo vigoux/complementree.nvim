@@ -1,6 +1,6 @@
 # Complementree.nvim: a tree-sitter powered completion framework
 
-A tree-sitter powered _completion framework_ built for neovim,
+A tree-sitter powered _completion framework_ built for Neovim,
 configured with functions.
 
 Features and design goals:
@@ -131,7 +131,7 @@ should be triggered. For example, those are equivalent:
 
 As a key, you can specify a table, and in this case, depending on what
 capture of the query the current cursor position matches, you will
-trigger the coresponding completion method.
+trigger the corresponding completion method.
 
 ## Utilities
 
@@ -146,7 +146,7 @@ Fuzzy LSP:
 combinators.pipeline(sources.lsp_matches, comparators.fzy, filters.amount(6))
 ```
 
-Fuzzy LSP and LuaSnip only if lsp returns something:
+Fuzzy LSP and LuaSnip only if LSP returns something:
 ```lua
 combinators.pipeline(combinators.optional(source.lsp_matches, source.luasnip_matches), comparators.fzy, filters.amount(6))
 ```
