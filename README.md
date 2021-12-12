@@ -105,6 +105,34 @@ If you have `romgrk/fzy-lua-native` installed, there will also be:
 - `fzy`: sort based on the fuzzy score (case sensitive)
 - `ifzy`: case insensitive version
 
+## Query-based completion filters
+
+In your setup calls, for a specific filetype completion, you can
+specify your completion filters based on queries. What this will do is
+use the query to determine whether the provided completion method
+should be triggered. For example, those are equivalent:
+
+```lua
+-- This
+{
+  comment = defaults.lsp
+}
+
+-- Is equivalent to that
+{
+  ["(comment) @c"] = defaults.lsp
+}
+
+-- And that
+{
+  ["(comment) @c"] = { c = defaults.lsp }
+}
+```
+
+As a key, you can specify a table, and in this case, depending on what
+capture of the query the current cursor position matches, you will
+trigger the coresponding completion method.
+
 ## Utilities
 
 A threading-macro-like function in also provided for convenience,
