@@ -34,6 +34,23 @@ local function node_type_at_cursor(line_to_cursor, linenr)
   return node:type()
 end
 
+local function get_completion(ft, line_to_cursor, lnum)
+  local ft_completion = user_config[ft] or user_config.default
+  if ft_completion then
+    if type(ft_completion) == "table" then
+      -- TODO(vigoux): make query-based completion parameters
+      local t = node_type_at_cursor(line_to_cursor, lnum)
+      if not t then return end
+      local sub_completion = ft_completion[t] or ft_completion.default
+      if sub_completion then
+        return sub_completion
+      end
+    elseif type(ft_completion) == "function" then
+      return ft_completion
+    end
+  end
+end
+
 function M.complete()
   -- Only refresh when not restarting
   if vim.fn.pumvisible() == 0 then
@@ -53,20 +70,12 @@ function M.complete()
   -- The source signature is
   -- line_content, line_content_up_to_cursor, preffix, column
 
-  local ft_completion = user_config[ft] or user_config.default
-  if ft_completion then
-    if type(ft_completion) == "table" then
-      local t = node_type_at_cursor(line_to_cursor, lnum)
-      if not t then return end
-      local sub_completion = ft_completion[t] or ft_completion.default
-      if sub_completion then
-        return sub_completion(line, line_to_cursor, preffix, col)
-      end
-    elseif type(ft_completion) == "function" then
-      return ft_completion(line, line_to_cursor, preffix, col)
-    end
+  local func = get_completion(ft, line_to_cursor, lnum)
+  if func then
+    return func(line, line_to_cursor, preffix, col)
+  else
+    return false
   end
-  return false
 end
 
 function M._CompleteDone()
