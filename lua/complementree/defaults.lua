@@ -17,8 +17,8 @@ function M.dummy()
   -- Does nothing
 end
 
-M.luasnip = comb.pipeline(sources.luasnip_matches, filters.preffix, comp.alphabetic)
+M.luasnip = comb.pipeline(sources.luasnip_matches, filters.prefix, comp.alphabetic)
 
-M.lsp = comb.pipeline(sources.lsp_matches, filters.preffix, comp.alphabetic)
+M.lsp = comb.pipeline(sources.lsp_matches, filters.prefix, comp.alphabetic)
 
 return M
