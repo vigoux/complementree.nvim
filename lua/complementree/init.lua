@@ -111,9 +111,18 @@ function M._CompleteDone()
      or not completed_item.user_data.source then return end
   local func = sources.complete_done_cbs[completed_item.user_data.source]
   if func then
-    vim.opt.eventignore:append('InsertLeave')
+    local previous_opt = api.nvim_get_option 'eventignore'
+    local newval = previous_opt
+    if #newval == 0 then
+      newval = 'InsertLeave'
+    else
+      newval = 'InsertLeave,' .. newval
+    end
+    api.nvim_set_option('eventignore', newval)
     func(completed_item)
-    vim.opt.eventignore:remove('InsertLeave')
+    vim.schedule(function()
+      api.nvim_set_option('eventignore', previous_opt)
+    end)
   end
 end
 
