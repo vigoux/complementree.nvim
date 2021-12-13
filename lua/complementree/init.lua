@@ -96,14 +96,18 @@ function M.complete()
 
   local func = get_completion(ft, line_to_cursor, lnum, col)
   if func then
-    return func(line, line_to_cursor, prefix, col)
-  else
-    return false
+    if func(line, line_to_cursor, prefix, col) then
+      -- TODO(vigoux): consider the fact that 'CursorHoldI' is already in event ignore
+      vim.opt.eventignore:append('CursorHoldI')
+      return true
+    end
   end
+  return false
 end
 
 function M._CompleteDone()
   local completed_item = api.nvim_get_vvar('completed_item')
+  vim.opt.eventignore:remove('CursorHoldI')
   if not completed_item
      or not completed_item.user_data
      or not completed_item.user_data.source then return end
