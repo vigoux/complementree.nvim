@@ -111,6 +111,12 @@ function M._CompleteDone()
      or not completed_item.user_data.source then return end
   local func = sources.complete_done_cbs[completed_item.user_data.source]
   if func then
+    -- We will force the ignore of InsertLeave events for a certain time, in order to avoid strange
+    -- behavior and flickering of the UI. So we _synchronously_ set 'eventignore' to ignore
+    -- InsertLeave, and schedule the reset in the loop.
+    --
+    -- The reset is scheduled during this time, so that when the user's events start to be
+    -- processed, everything will be just as if nothing happened.
     local previous_opt = api.nvim_get_option 'eventignore'
     local newval = previous_opt
     if #newval == 0 then
