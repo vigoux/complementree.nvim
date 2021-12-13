@@ -84,4 +84,17 @@ function M.pipeline(source, ...)
   return M.wrap(current)
 end
 
+function M.chain(...)
+  local funcs = { ... }
+  return function(...)
+    for _,f in pairs(funcs) do
+      local c = f(...)
+      if #c > 0 then
+        return c
+      end
+    end
+    return {}
+  end
+end
+
 return M

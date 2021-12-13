@@ -62,6 +62,8 @@ function as input:
 
 - `combine`: just concatenates the results of multiple matches
   functions, returns a _matches_ function
+- `chain`: mimics mucomplete chaining, returns the first non-empty
+  matches of the provided functions
 - `non_empty_prefix`: checks that the prefix is non-empty before
   triggering completion
 - `optional`: takes two _matches_ functions, and triggers the second
