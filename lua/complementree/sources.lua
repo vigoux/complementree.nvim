@@ -162,6 +162,58 @@ local function lsp_completedone(completed_item)
   end
 end
 
+M.filepath = function(_, _, _, _)
+  local MAX_FILEPATH_DEPTH = 8 -- GET RID OF THESE
+  local MAKE_RELATIVE = true
+  local make_relative = utils.make_relative_path
+  local scan_dir = utils.scan_dir
+
+  local included_dirs = {}
+
+  local lsp_buf_clients = vim.lsp.buf_get_clients()
+  if #lsp_buf_clients > 0 then
+    for _, client in pairs(lsp_buf_clients) do
+      included_dirs[#included_dirs + 1] = client.config.root_dir
+    end
+  else
+    included_dirs[1] = "."
+  end
+
+  local items = {}
+  local scandir_opts = { hidden = false, depth = MAX_FILEPATH_DEPTH, ignore_hidden=true }
+  local client_paths
+  for _, root_dir in ipairs(included_dirs) do
+    client_paths = scan_dir(root_dir, scandir_opts)
+    for _, path in ipairs(client_paths) do
+      items[#items + 1] = {root_dir = root_dir, path = path }
+    end
+  end
+
+  -- local max_len = paths_max_len or 0
+  -- local paths_truncate = (paths_max_len and paths_max_len > 0)
+  local display_path
+  local matches = {}
+  print(vim.inspect(included_dirs))
+  for _, i in ipairs(items) do
+    -- print(path .. " :: " .. included_dirs[source])
+    display_path = MAKE_RELATIVE and make_relative(i.path, i.root_dir) or i.path
+    -- display_path = paths_truncate and truncate(display_path, paths_max_len) or display_path
+
+    matches[#matches + 1] = {
+      word = i.path,
+      abbr = display_path,
+      kind = "[path]",
+      icase = 1,
+      dup = 1,
+      empty = 1,
+      user_data = { source = "filepath" },
+    }
+    display_path = nil
+  end
+
+  return matches
+end
+
 -- CompleteDone handlers
 
 local function luasnip_completedone(_)
