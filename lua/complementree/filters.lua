@@ -32,4 +32,10 @@ M.strict_prefix = mk_filter(function(_, v, prefix)
   return vim.startswith(w, prefix) and #w ~= #prefix
 end)
 
+M.substr = mk_filter(function(_, v, prefix)
+  -- print(":: " .. prefix)
+  local w = utils.cword(v)
+  return w:find(prefix, 1, true) ~= nil
+end)
+
 return M
