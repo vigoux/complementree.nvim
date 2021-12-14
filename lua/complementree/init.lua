@@ -88,15 +88,15 @@ function M.complete()
   local line = api.nvim_get_current_line()
   local lnum, cursor_pos = unpack(api.nvim_win_get_cursor(0))
   local line_to_cursor = line:sub(1, cursor_pos)
-  local col = vim.fn.match(line_to_cursor, '\\k*$') + 1
-  local prefix = line:sub(col, cursor_pos)
+  local pref_start = line_to_cursor:find"%S*$"
+  local prefix = line_to_cursor:sub(pref_start)
 
   -- The source signature is
   -- line_content, line_content_up_to_cursor, prefix, column
 
-  local func = get_completion(ft, line_to_cursor, lnum, col)
+  local func = get_completion(ft, line_to_cursor, lnum, pref_start)
   if func then
-    if func(line, line_to_cursor, prefix, col) then
+    if func(line, line_to_cursor, prefix, pref_start) then
       -- TODO(vigoux): consider the fact that 'CursorHoldI' is already in event ignore
       return true
     end
