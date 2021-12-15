@@ -218,7 +218,6 @@ M.create_filepath_source = function(opts)
         empty = 1,
         user_data = { source = "filepath" },
       }
-      display_path = nil
     end
 
     return matches
