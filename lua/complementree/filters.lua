@@ -33,9 +33,8 @@ M.strict_prefix = mk_filter(function(_, v, prefix)
 end)
 
 M.substr = mk_filter(function(_, v, prefix)
-  -- print(":: " .. prefix)
   local w = utils.cword(v)
-  return w:find(prefix, 1, true) ~= nil
+  return w:find(prefix, 1, true)
 end)
 
 return M
