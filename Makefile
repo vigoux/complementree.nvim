@@ -2,5 +2,5 @@ lint:
 	stylua -c .
 
 test:
-	nvim --headless -c "luafile tests/combinators.lua" -c "quit"
+	nvim -u min.vim --headless -c "luafile tests/combinators.lua" -c "quit"
 	@echo ""
