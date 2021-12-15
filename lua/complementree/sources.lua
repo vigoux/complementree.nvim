@@ -165,7 +165,7 @@ local function lsp_completedone(completed_item)
   end
 end
 
-M.create_filepath_source = function(opts)
+M.create_filepath_matches = function(opts)
   local relpath = utils.make_relative_path -- TODO: use vims relpath?
   local scan_dir = utils.scan_dir
 
@@ -175,10 +175,10 @@ M.create_filepath_source = function(opts)
     ignore_hidden = opts.ignore_hidden or true,
     relative_paths = opts.relative_paths or true,
     root_dirs = opts.root_dirs,
-    match_patterns = opts.match_patterns or {}
+    match_patterns = opts.match_patterns or {},
   }
 
-  local src = function(_, _, _, _)
+  return function(_, _, _, _)
     local included_root_dirs = {}
 
     if config.root_dirs then
@@ -197,7 +197,10 @@ M.create_filepath_source = function(opts)
     local items = {}
     local path_entries
     for _, root_dir in ipairs(included_root_dirs) do
-      path_entries = scan_dir(root_dir, { max_depth = config.max_depth, ignore_hidden = config.ignore_hidden, match_patterns = config.match_patterns })
+      path_entries = scan_dir(
+        root_dir,
+        { max_depth = config.max_depth, ignore_hidden = config.ignore_hidden, match_patterns = config.match_patterns }
+      )
       for _, path in ipairs(path_entries) do
         items[#items + 1] = { root_dir = root_dir, path = path }
       end
@@ -221,11 +224,9 @@ M.create_filepath_source = function(opts)
 
     return matches
   end
-
-  return src
 end
 
-M.filepath = M.create_filepath_source()
+M.filepath = M.create_filepath_matches()
 
 -- CompleteDone handlers
 
