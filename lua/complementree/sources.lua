@@ -1,7 +1,6 @@
 local M = {}
 
-local utils = require 'complementree.utils'
-local comb = require 'complementree.combinators'
+local utils = require "complementree.utils"
 local api = vim.api
 local lsp = vim.lsp
 
