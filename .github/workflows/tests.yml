@@ -21,5 +21,4 @@ jobs:
 
     - name: Run tests
       run: |
-        nix-shell --pure --run "make test" | tee /tmp/res
-        grep -q "^not ok" /tmp/res
+        nix-shell --pure --run "make test"
