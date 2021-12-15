@@ -21,4 +21,6 @@ M.luasnip = comb.pipeline(sources.luasnip_matches, filters.prefix, comp.alphabet
 
 M.lsp = comb.pipeline(sources.lsp_matches, filters.prefix, comp.alphabetic)
 
+M.filepath = comb.pipeline(sources.filepath_matches, filters.substr, comp.alphabetic)
+
 return M
