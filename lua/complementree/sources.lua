@@ -165,7 +165,7 @@ local function lsp_completedone(completed_item)
   end
 end
 
-M.create_filepath_matches = function(opts)
+M.filepath_matches = function(opts)
   local relpath = utils.make_relative_path -- TODO: use vims relpath?
   local scan_dir = utils.scan_dir
 
@@ -225,8 +225,6 @@ M.create_filepath_matches = function(opts)
     return matches
   end)
 end
-
-M.filepath = M.create_filepath_matches()
 
 -- CompleteDone handlers
 
