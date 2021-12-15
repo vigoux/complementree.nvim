@@ -28,6 +28,7 @@ local scandir_default_opts = {
 }
 
 M.scan_dir = function(root_dir, opts, list, depth)
+  local tbl_isempty = vim.tbl_isempty
   opts = opts or scandir_default_opts
   list = list or {}
   depth = depth or 1
@@ -62,7 +63,7 @@ M.scan_dir = function(root_dir, opts, list, depth)
       end
     elseif ftype == "file" then
       if not is_ignored_path(path) then
-        if opts.match_patterns ~= {} and not is_matched_filetype(path) then
+        if not tbl_isempty(opts.match_patterns) and not is_matched_filetype(path) then
           goto continue
         end
         list[#list + 1] = ("%s%s%s"):format(root_dir, os_sep, path)
