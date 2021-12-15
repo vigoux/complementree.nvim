@@ -3,8 +3,8 @@ local M = {}
 
 local function mk_comparator(func)
   return function(msource)
-    return function(line, ltc, prefix, col)
-      local orig = msource(line, ltc, prefix, col)
+    return function(ltc, lnum)
+      local orig, prefix = msource(ltc, lnum)
       local cmp_cache = {}
       table.sort(orig, function(a, b)
         local key = { a, b }
@@ -15,7 +15,7 @@ local function mk_comparator(func)
 
         return cmp_cache[key]
       end)
-      return orig
+      return orig, prefix
     end
   end
 end
@@ -32,8 +32,8 @@ local ok_fzy, fzy = pcall(require, 'fzy-lua-native')
 if ok_fzy then
   local function mk_fzy(is_case_sensitive)
     return function(msource)
-      return function(line, ltc, prefix, col)
-        local orig = msource(line, ltc, prefix, col)
+      return function(ltc, lnum)
+        local orig, prefix = msource(ltc, lnum)
         local scores = {}
         local matching = {}
         for _, a in ipairs(orig) do
@@ -46,7 +46,7 @@ if ok_fzy then
         table.sort(matching, function(a, b)
           return scores[a] > scores[b]
         end)
-        return matching
+        return matching, prefix
       end
     end
   end

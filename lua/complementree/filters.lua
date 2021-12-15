@@ -4,15 +4,15 @@ local M = {}
 -- A function that returns a function that returns a function
 local function mk_filter(func)
   return function(msource)
-    return function(line, ltc, prefix, col)
-      local orig = msource(line, ltc, prefix, col)
+    return function(ltc, lnum)
+      local orig, prefix = msource(ltc, lnum)
       local filtered = {}
       for i, v in ipairs(orig) do
         if func(i, v, prefix) then
           table.insert(filtered, v)
         end
       end
-      return filtered
+      return filtered, prefix
     end
   end
 end
