@@ -178,7 +178,7 @@ M.create_filepath_matches = function(opts)
     match_patterns = opts.match_patterns or {},
   }
 
-  return function(_, _, _, _)
+  return cached("filepath", function(_, _, _, _)
     local included_root_dirs = {}
 
     if config.root_dirs then
@@ -223,7 +223,7 @@ M.create_filepath_matches = function(opts)
     end
 
     return matches
-  end
+  end)
 end
 
 M.filepath = M.create_filepath_matches()
