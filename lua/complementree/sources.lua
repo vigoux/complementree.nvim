@@ -1,9 +1,10 @@
 local M = {}
 
-local utils = require 'complementree.utils'
-local comb = require 'complementree.combinators'
+local utils = require'complementree.utils'
+local comb = require'complementree.combinators'
 local api = vim.api
 local lsp = vim.lsp
+local fn = vim.fn
 
 local cache = {}
 
@@ -225,6 +226,54 @@ local function lsp_completedone(completed_item)
     apply_snippet(item, suffix)
   end
 end
+
+local ctags_extension = {
+  default = {
+    ["c"] = "class",
+    ["d"] = "define",
+    ["e"] = "enumerator",
+    ["f"] = "function",
+    ["F"] = "file",
+    ["g"] = "enumeration",
+    ["m"] = "member",
+    ["p"] = "prototype",
+    ["s"] = "structure",
+    ["t"] = "typedef",
+    ["u"] = "union",
+    ["v"] = "variable",
+  },
+}
+
+M.ctags_matches = cached("ctags", function(_, _, _, _)
+  local tag_files = fn.tagfiles()
+  local tags = {}
+  for _, tagfile in ipairs(tag_files) do
+    local content = utils.read_file(fn.expand(tagfile, true))
+    for line in content:gmatch "([^\n]*)\n?" do
+      tags[#tags + 1] = line
+    end
+  end
+
+  local filetype = "default"
+  local items = {}
+  local name, kind
+  for _, line in ipairs(tags) do
+    name, _, _, kind = line:match '([^\t]+)\t([^\t]+)\t/^?\t?(.*)/;"\t+.*(%a)$'
+    if name then
+      items[#items + 1] = {
+        word = name,
+        abbr = name,
+        kind = (kind and ctags_extension[filetype][kind] or "undefined"),
+        icase = 1,
+        dup = 1,
+        empty = 1,
+        user_data = { source = "ctags" }
+      }
+    end
+  end
+
+  return items
+end)
 
 -- CompleteDone handlers
 

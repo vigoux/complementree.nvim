@@ -21,4 +21,6 @@ M.luasnip = comb.pipeline(sources.luasnip_matches {}, filters.prefix, comp.alpha
 
 M.lsp = comb.pipeline(sources.lsp_matches {}, filters.prefix, comp.alphabetic)
 
+M.ctags = comb.pipeline(sources.ctags_matches, filters.prefix, comp.alphabetic)
+
 return M
