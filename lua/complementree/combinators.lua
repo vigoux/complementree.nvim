@@ -42,7 +42,7 @@ function M.optional(mandat, opt)
       end
       return matches, prefix
     else
-      return {}, ""
+      return {}, ''
     end
   end
 end
@@ -84,7 +84,7 @@ function M.chain(...)
         return c, pref
       end
     end
-    return {}, ""
+    return {}, ''
   end
 end
 

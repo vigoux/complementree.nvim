@@ -32,7 +32,8 @@ describe('filter', function()
         mk_compl_element 'foobaz',
         mk_compl_element 'barbaz',
         mk_compl_element 'baz',
-      }, prefix
+      },
+        prefix
     end)
   end)
 
