@@ -272,8 +272,6 @@ M.filepath_matches = function(opts)
   end)
 end
 
-M.filepath = M.create_filepath_source()
-
 -- CompleteDone handlers
 
 local function luasnip_completedone(_)
