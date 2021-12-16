@@ -2,9 +2,6 @@ local M = {}
 local api = vim.api
 local uv = vim.loop
 
-local os = string.lower(jit.os)
-local os_sep = (os == "linux" or os == "osx" or os == "bsd") and "/" or "\\"
-
 function M.feed(codes)
   api.nvim_feedkeys(api.nvim_replace_termcodes(codes, true, true, true), 'm', true)
 end
@@ -16,67 +13,52 @@ end
 M.make_relative_path = function(path, root)
   local baselen = #root
   if path:sub(0, baselen) == root then
-    path = path:sub(baselen + 2)
+      path = path:sub(baselen+2)
   end
   return path
 end
 
-local scandir_default_opts = {
-  ignore_hidden = true,
-  max_depth = 8,
-  match_patterns = {},
-}
+local function get_os_file_separator()
+  local os = string.lower(jit.os)
+  if os == "linux" or os == "osx" or os == "bsd" then
+    return "/"
+  else
+    return "\\"
+  end
+end
 
-M.scan_dir = function(root_dir, opts, list, depth)
-  local tbl_isempty = vim.tbl_isempty
-  opts = opts or scandir_default_opts
+local os_sep = get_os_file_separator()
+M.scan_dir = function(dir, list, opts)
   list = list or {}
   depth = depth or 1
 
-  local function is_ignored_path(path)
-    return (opts.ignore_hidden and path:sub(1, 1) == ".")
-  end
-
-  local function is_matched_filetype(path)
-    for _, pattern in ipairs(opts.match_patterns) do
-      if path:match(pattern) then
-        return true
-      end
-    end
-    return false
-  end
-
-  local req = uv.fs_scandir(root_dir)
+  local req = uv.fs_scandir(dir)
   if not req then
     return list
   end
+
+  -- TODO: implement ignore hidden dirs
+  local opts = {}
+  local ignore_hidden = opts.ignore_hidden or true
+  local normalize_paths = opts.normalize_paths or true
+  local max_dir_depth = opts.max_depth or 8
 
   local function iter()
     return uv.fs_scandir_next(req)
   end
 
   local sub_dirs = {}
-  for path, ftype in iter do
+  for name, ftype in iter do
     if ftype == "directory" then
-      if not is_ignored_path(path) then
-        sub_dirs[#sub_dirs + 1] = path
-      end
+      sub_dirs[#sub_dirs + 1] = name
     elseif ftype == "file" then
-      if not is_ignored_path(path) then
-        if not tbl_isempty(opts.match_patterns) and not is_matched_filetype(path) then
-          goto continue
-        end
-        list[#list + 1] = ("%s%s%s"):format(root_dir, os_sep, path)
-        ::continue::
-      end
+      list[#list + 1] = dir .. os_sep .. name
     end
   end
 
-  if depth <= opts.max_depth then
-    local subdir_path
-    for _, path in ipairs(sub_dirs) do
-      subdir_path = ("%s%s%s"):format(root_dir, os_sep, path)
-      list = M.scan_dir(subdir_path, opts, list, depth + 1)
+  for _, sd in ipairs(sub_dirs) do
+    if not(ignore_hidden and sd:sub(1, 1) == ".") then
+      list = M.scan_dir(dir .. os_sep .. sd, list)
     end
   end
 
