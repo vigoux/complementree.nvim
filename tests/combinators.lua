@@ -10,12 +10,7 @@ local function mk_compl_element(word)
 end
 
 local function run(source, line, cursor)
-  local cursor_pos = cursor or #line
-  local line_to_cursor = line:sub(1, cursor_pos)
-  local pref_start = line_to_cursor:find '%S*$'
-  local prefix = line_to_cursor:sub(pref_start)
-
-  local res = source(line, line_to_cursor, prefix, pref_start)
+  local res, _ = source(line, 0)
   local ret = {}
   for _, r in pairs(res) do
     table.insert(ret, utils.cword(r))
@@ -28,14 +23,16 @@ describe('filter', function()
   local mock_source
 
   before_each(function()
-    mock_source = spy.new(function()
+    mock_source = spy.new(function(line)
+      local pref_start = line:find '%S*$'
+      local prefix = line:sub(pref_start)
       return {
         mk_compl_element 'foo',
         mk_compl_element 'foobar',
         mk_compl_element 'foobaz',
         mk_compl_element 'barbaz',
         mk_compl_element 'baz',
-      }
+      }, prefix
     end)
   end)
 

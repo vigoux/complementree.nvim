@@ -4,27 +4,6 @@ local ccomp = require 'complementree.comparators'
 local filter = require 'complementree.filters'
 local utils = require 'complementree.utils'
 
-local function filter_sort(matches, prefix, comparator, filterf)
-  local filtered = {}
-  for i, v in ipairs(matches) do
-    if filterf(i, v, prefix) then
-      table.insert(filtered, v)
-    end
-  end
-  local cmp_cache = {}
-  table.sort(filtered, function(a, b)
-    local key = { a, b }
-
-    if not cmp_cache[key] then
-      cmp_cache[key] = comparator(a, b, prefix)
-    end
-
-    return cmp_cache[key]
-  end)
-
-  return filtered
-end
-
 local function complete(col, matches)
   if matches and #matches > 0 then
     vim.fn.complete(col, matches)
@@ -38,30 +17,39 @@ function M.combine(...)
   local funcs = { ... }
   return function(...)
     local matches = {}
+    local max_p = nil
     for _, f in pairs(funcs) do
-      local m = f(...)
-      vim.list_extend(matches, m)
+      local m, p = f(...)
+      if not max_p then
+        max_p = p
+      end
+
+      if max_p == p then
+        vim.list_extend(matches, m)
+      end
     end
-    return matches
+    return matches, max_p
   end
 end
 
 function M.optional(mandat, opt)
-  return function(line, ltc, prefix, col)
-    local matches = mandat(line, ltc, prefix, col)
+  return function(ltc, lnum)
+    local matches, prefix = mandat(ltc, lnum)
     if #matches > 0 then
-      vim.list_extend(matches, opt(line, ltc, prefix, col))
-      return matches
+      local m, _ = opt(ltc, lnum)
+      vim.list_extend(matches, m)
+      return matches, prefix
     else
-      return {}
+      return {}, ""
     end
   end
 end
 
 function M.non_empty_prefix(func)
-  return function(line, ltc, prefix, col)
+  return function(ltc, lnum)
+    local compl, prefix = func(ltc, lnum)
     if #prefix > 1 then
-      return complete(col, func(line, ltc, prefix, col))
+      return complete(#ltc - #prefix + 1, compl)
     else
       return false
     end
@@ -69,9 +57,9 @@ function M.non_empty_prefix(func)
 end
 
 function M.wrap(func)
-  return function(line, line_to_cursor, prefix, col)
-    local compl = func(line, line_to_cursor, prefix, col)
-    return complete(col, compl)
+  return function(ltc, lnum)
+    local compl, prefix = func(ltc, lnum)
+    return complete(#ltc - #prefix + 1, compl)
   end
 end
 
@@ -88,12 +76,12 @@ function M.chain(...)
   local funcs = { ... }
   return function(...)
     for _, f in pairs(funcs) do
-      local c = f(...)
+      local c, pref = f(...)
       if #c > 0 then
-        return c
+        return c, pref
       end
     end
-    return {}
+    return {}, ""
   end
 end
 

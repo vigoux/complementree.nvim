@@ -81,6 +81,14 @@ local function get_completion(ft, line_to_cursor, lnum, col)
   end
 end
 
+function M.separate_prefix(line, cursor)
+  local line_to_cursor = line:sub(1, cursor)
+  local pref_start = line_to_cursor:find '%S*$'
+  local prefix = line_to_cursor:sub(pref_start)
+
+  return line_to_cursor, pref_start, prefix
+end
+
 function M.complete()
   -- Only refresh when not restarting
   if vim.fn.pumvisible() == 0 then
@@ -95,9 +103,7 @@ function M.complete()
 
   local line = api.nvim_get_current_line()
   local lnum, cursor_pos = unpack(api.nvim_win_get_cursor(0))
-  local line_to_cursor = line:sub(1, cursor_pos)
-  local pref_start = line_to_cursor:find '%S*$'
-  local prefix = line_to_cursor:sub(pref_start)
+  local line_to_cursor, pref_start, prefix = M.separate_prefix(line, cursor_pos)
 
   -- The source signature is
   -- line_content, line_content_up_to_cursor, prefix, column
