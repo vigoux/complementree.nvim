@@ -12,11 +12,21 @@ function M.invalidate_cache()
 end
 
 local function cached(kind, func)
-  return function(...)
+  return function(ltc, lnum)
+    local m,p
     if not cache[kind] then
-      cache[kind] = {func(...)}
+      m, p = func(ltc, lnum)
+      cache[kind] = {m, p}
+    else
+      m, p = unpack(cache[kind])
+      -- We need to correct the prefix now
+      -- in order to include the added character
+      -- FIXME(vigoux): this is not right, we lose the whole "prefix resolution" thing by
+      -- only using a regex here. But I think it is fine, for performanace reasons
+      local new_p_extractor = string.format("%s%%a+$", p)
+      local pref_start = ltc:find(new_p_extractor)
+      p = ltc:sub(pref_start)
     end
-    local m,p = unpack(cache[kind])
     local new = {}
     for _, v in pairs(m) do
       table.insert(new, v)
@@ -50,6 +60,7 @@ M.luasnip_matches = cached('luasnip', function(line_to_cursor, _)
       icase = 1,
       dup = 1,
       empty = 1,
+      equal = 1,
       user_data = { source = 'luasnip' },
     })
   end
@@ -110,6 +121,7 @@ M.lsp_matches = cached("lsp", function(_, _, _, _)
         icase = 1,
         dup = 1,
         empty = 1,
+        equal = 1,
         user_data = item,
       })
     end
