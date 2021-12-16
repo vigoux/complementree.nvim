@@ -56,7 +56,7 @@ M.scan_dir = function(root_dir, opts, list, depth)
 
   local sub_dirs = {}
   for path, ftype in iter do
-    if ftype == "directory" then
+    if ftype == 'directory' then
       if not is_ignored_path(path) then
         sub_dirs[#sub_dirs + 1] = path
       end
