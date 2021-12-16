@@ -13,17 +13,17 @@ end
 
 local function cached(kind, func)
   return function(ltc, lnum)
-    local m,p
+    local m, p
     if not cache[kind] then
       m, p = func(ltc, lnum)
-      cache[kind] = {m, p}
+      cache[kind] = { m, p }
     else
       m, p = unpack(cache[kind])
       -- We need to correct the prefix now
       -- in order to include the added character
       -- FIXME(vigoux): this is not right, we lose the whole "prefix resolution" thing by
       -- only using a regex here. But I think it is fine, for performanace reasons
-      local new_p_extractor = string.format("%s%%a+$", p)
+      local new_p_extractor = string.format('%s%%a+$', p)
       local pref_start = ltc:find(new_p_extractor)
       p = ltc:sub(pref_start)
     end
