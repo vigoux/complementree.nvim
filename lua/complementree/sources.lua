@@ -246,7 +246,10 @@ M.filepath_matches = function(opts)
     local items = {}
     local path_entries
     for _, root_dir in ipairs(included_root_dirs) do
-      path_entries = scan_dir(root_dir, { max_depth = config.max_depth, ignore_hidden = config.ignore_hidden, match_patterns = config.match_patterns })
+      path_entries = scan_dir(
+        root_dir,
+        { max_depth = config.max_depth, ignore_hidden = config.ignore_hidden, match_patterns = config.match_patterns }
+      )
       for _, path in ipairs(path_entries) do
         items[#items + 1] = { root_dir = root_dir, path = path }
       end
