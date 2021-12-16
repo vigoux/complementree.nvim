@@ -17,18 +17,18 @@ function M.combine(...)
   local funcs = { ... }
   return function(...)
     local matches = {}
-    local max_p = nil
+    local coherent_p = nil
     for _, f in pairs(funcs) do
       local m, p = f(...)
-      if not max_p then
-        max_p = p
+      if not coherent_p then
+        coherent_p = p
       end
 
-      if max_p == p then
+      if coherent_p == p then
         vim.list_extend(matches, m)
       end
     end
-    return matches, max_p
+    return matches, coherent_p
   end
 end
 
@@ -36,8 +36,10 @@ function M.optional(mandat, opt)
   return function(ltc, lnum)
     local matches, prefix = mandat(ltc, lnum)
     if #matches > 0 then
-      local m, _ = opt(ltc, lnum)
-      vim.list_extend(matches, m)
+      local m, p = opt(ltc, lnum)
+      if p == prefix then
+        vim.list_extend(matches, m)
+      end
       return matches, prefix
     else
       return {}, ""
@@ -45,6 +47,7 @@ function M.optional(mandat, opt)
   end
 end
 
+-- TODO(vigoux): do we even need this anymore ?
 function M.non_empty_prefix(func)
   return function(ltc, lnum)
     local compl, prefix = func(ltc, lnum)
