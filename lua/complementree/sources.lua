@@ -324,6 +324,7 @@ M.filepath_matches = function(opts)
         icase = 1,
         dup = 1,
         empty = 1,
+        equals = 1,
         user_data = { source = 'filepath' },
       }
     end
