@@ -110,7 +110,7 @@ function M.complete()
 
   local func = get_completion(ft, line_to_cursor, lnum, pref_start)
   if func then
-    if func(line, line_to_cursor, prefix, pref_start) then
+    if func(line_to_cursor, lnum) then
       return true
     end
   end
