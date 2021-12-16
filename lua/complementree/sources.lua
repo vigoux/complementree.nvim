@@ -1,10 +1,9 @@
 local M = {}
 
-local utils = require'complementree.utils'
-local comb = require'complementree.combinators'
+local utils = require 'complementree.utils'
+local comb = require 'complementree.combinators'
 local api = vim.api
 local lsp = vim.lsp
-local fn = vim.fn
 
 local cache = {}
 
@@ -229,50 +228,39 @@ end
 
 local ctags_extension = {
   default = {
-    ["c"] = "class",
-    ["d"] = "define",
-    ["e"] = "enumerator",
-    ["f"] = "function",
-    ["F"] = "file",
-    ["g"] = "enumeration",
-    ["m"] = "member",
-    ["p"] = "prototype",
-    ["s"] = "structure",
-    ["t"] = "typedef",
-    ["u"] = "union",
-    ["v"] = "variable",
+    ['c'] = 'class',
+    ['d'] = 'define',
+    ['e'] = 'enumerator',
+    ['f'] = 'function',
+    ['F'] = 'file',
+    ['g'] = 'enumeration',
+    ['m'] = 'member',
+    ['p'] = 'prototype',
+    ['s'] = 'structure',
+    ['t'] = 'typedef',
+    ['u'] = 'union',
+    ['v'] = 'variable',
   },
 }
 
-M.ctags_matches = cached("ctags", function(line_to_cursor, _)
+M.ctags_matches = cached('ctags', function(line_to_cursor, _)
   local pref_start = line_to_cursor:find '%w*$'
   local prefix = line_to_cursor:sub(pref_start)
 
-  local tag_files = fn.tagfiles()
-  local tags = {}
-  for _, tagfile in ipairs(tag_files) do
-    local content = utils.read_file(fn.expand(tagfile, true))
-    for line in content:gmatch "([^\n]*)\n?" do
-      tags[#tags + 1] = line
-    end
-  end
+  local tags = vim.fn.taglist '.*'
 
-  local filetype = "default"
+  local filetype = 'default'
   local items = {}
-  local name, kind
-  for _, line in ipairs(tags) do
-    name, _, _, kind = line:match '([^\t]+)\t([^\t]+)\t/^?\t?(.*)/;"\t+.*(%a)$'
-    if name then
-      items[#items + 1] = {
-        word = name,
-        abbr = name,
-        kind = (kind and ctags_extension[filetype][kind] or "undefined"),
-        icase = 1,
-        dup = 1,
-        empty = 1,
-        user_data = { source = "ctags" }
-      }
-    end
+  for _, t in ipairs(tags) do
+    items[#items + 1] = {
+      word = t.name,
+      abbr = t.name,
+      kind = (t.kind and ctags_extension[filetype][t.kind] or 'undefined'),
+      icase = 0,
+      dup = 0,
+      empty = 1,
+      user_data = { source = 'ctags' },
+    }
   end
 
   return items, prefix
