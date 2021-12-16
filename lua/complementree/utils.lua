@@ -3,7 +3,7 @@ local api = vim.api
 local uv = vim.loop
 
 local os = string.lower(jit.os)
-local os_sep = (os == "linux" or os == "osx" or os == "bsd") and "/" or "\\"
+local os_sep = (os == 'linux' or os == 'osx' or os == 'bsd') and '/' or '\\'
 
 function M.feed(codes)
   api.nvim_feedkeys(api.nvim_replace_termcodes(codes, true, true, true), 'm', true)
@@ -33,7 +33,7 @@ M.scan_dir = function(root_dir, opts, list, depth)
   depth = depth or 1
 
   local function is_ignored_path(path)
-    return (opts.ignore_hidden and path:sub(1, 1) == ".")
+    return (opts.ignore_hidden and path:sub(1, 1) == '.')
   end
 
   local function is_matched_filetype(path)
@@ -60,12 +60,12 @@ M.scan_dir = function(root_dir, opts, list, depth)
       if not is_ignored_path(path) then
         sub_dirs[#sub_dirs + 1] = path
       end
-    elseif ftype == "file" then
+    elseif ftype == 'file' then
       if not is_ignored_path(path) then
         if opts.match_patterns ~= {} and not is_matched_filetype(path) then
           goto continue
         end
-        list[#list + 1] = ("%s%s%s"):format(root_dir, os_sep, path)
+        list[#list + 1] = ('%s%s%s'):format(root_dir, os_sep, path)
         ::continue::
       end
     end
@@ -74,7 +74,7 @@ M.scan_dir = function(root_dir, opts, list, depth)
   if depth <= opts.max_depth then
     local subdir_path
     for _, path in ipairs(sub_dirs) do
-      subdir_path = ("%s%s%s"):format(root_dir, os_sep, path)
+      subdir_path = ('%s%s%s'):format(root_dir, os_sep, path)
       list = M.scan_dir(subdir_path, opts, list, depth + 1)
     end
   end

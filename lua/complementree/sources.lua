@@ -1,6 +1,6 @@
 local M = {}
 
-local utils = require "complementree.utils"
+local utils = require 'complementree.utils'
 local api = vim.api
 local lsp = vim.lsp
 
@@ -65,7 +65,7 @@ M.luasnip_matches = cached('luasnip', function(line_to_cursor, _)
   end
 
   vim.tbl_map(add_snippet, snippets.all)
-  vim.tbl_map(add_snippet, snippets[api.nvim_buf_get_option(0, "filetype")])
+  vim.tbl_map(add_snippet, snippets[api.nvim_buf_get_option(0, 'filetype')])
 
   return items, prefix
 end)
@@ -115,7 +115,7 @@ M.lsp_matches = cached('lsp', function(line_to_cursor, lnum)
     end
 
     for _, item in pairs(items or {}) do
-      local kind = lsp.protocol.CompletionItemKind[item.kind] or ""
+      local kind = lsp.protocol.CompletionItemKind[item.kind] or ''
       local word
       if kind == 'Snippet' then
         word = item.label
@@ -227,7 +227,7 @@ M.filepath_matches = function(opts)
     match_patterns = opts.match_patterns or {},
   }
 
-  return cached("filepath", function(_, _, _, _)
+  return cached('filepath', function(_, _, _, _)
     local included_root_dirs = {}
 
     if config.root_dirs then
@@ -239,7 +239,7 @@ M.filepath_matches = function(opts)
           included_root_dirs[#included_root_dirs + 1] = client.config.root_dir
         end
       else
-        included_root_dirs[1] = "."
+        included_root_dirs[1] = '.'
       end
     end
 
@@ -260,11 +260,11 @@ M.filepath_matches = function(opts)
       matches[#matches + 1] = {
         word = i.path,
         abbr = display_path,
-        kind = "[path]",
+        kind = '[path]',
         icase = 1,
         dup = 1,
         empty = 1,
-        user_data = { source = "filepath" },
+        user_data = { source = 'filepath' },
       }
     end
 
