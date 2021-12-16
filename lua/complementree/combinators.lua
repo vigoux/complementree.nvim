@@ -1,9 +1,5 @@
 local M = {}
 
-local ccomp = require 'complementree.comparators'
-local filter = require 'complementree.filters'
-local utils = require 'complementree.utils'
-
 local function complete(col, matches)
   if matches and #matches > 0 then
     vim.fn.complete(col, matches)
