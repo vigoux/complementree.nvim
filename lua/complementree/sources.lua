@@ -1,5 +1,9 @@
 local M = {}
 
+<<<<<<< HEAD
+=======
+local utils = require 'complementree.utils'
+>>>>>>> 1c63645 (feat: path completion take 2)
 local api = vim.api
 local lsp = vim.lsp
 
@@ -264,6 +268,67 @@ function M.ctags_matches(opts)
     end
 
     return items, prefix
+  end)
+end
+
+M.filepath_matches = function(opts)
+  local relpath = utils.make_relative_path -- TODO: use vims relpath?
+  local scan_dir = utils.scan_dir
+
+  opts = opts or {}
+  local config = {
+    max_depth = opts.max_depth or 8,
+    ignore_hidden = opts.ignore_hidden or true,
+    relative_paths = opts.relative_paths or true,
+    root_dirs = opts.root_dirs,
+    match_patterns = opts.match_patterns or {},
+  }
+
+  return cached('filepath', function(_, _, _, _)
+    local included_root_dirs = {}
+
+    if config.root_dirs then
+      included_root_dirs = config.root_dirs
+    else
+      local lsp_buf_clients = vim.lsp.buf_get_clients()
+      if #lsp_buf_clients > 0 then
+        for _, client in pairs(lsp_buf_clients) do
+          included_root_dirs[#included_root_dirs + 1] = client.config.root_dir
+        end
+      else
+        included_root_dirs[1] = '.'
+      end
+    end
+
+    local items = {}
+    local path_entries
+    for _, root_dir in ipairs(included_root_dirs) do
+      path_entries = scan_dir(
+        root_dir,
+        { max_depth = config.max_depth, ignore_hidden = config.ignore_hidden, match_patterns = config.match_patterns }
+      )
+      for _, path in ipairs(path_entries) do
+        items[#items + 1] = { root_dir = root_dir, path = path }
+      end
+    end
+
+    local display_path
+    local matches = {}
+    for _, i in ipairs(items) do
+      display_path = config.relative_paths and relpath(i.path, i.root_dir) or i.path
+
+      matches[#matches + 1] = {
+        word = i.path,
+        abbr = display_path,
+        kind = '[path]',
+        icase = 1,
+        dup = 1,
+        empty = 1,
+        user_data = { source = 'filepath' },
+      }
+    end
+
+    return matches
   end)
 end
 
