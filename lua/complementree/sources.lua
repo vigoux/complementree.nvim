@@ -72,9 +72,33 @@ M.luasnip_matches = cached('luasnip', function(line_to_cursor, _)
 end)
 
 -- Shamelessly stollen from https://github.com/mfussenegger/nvim-lsp-compl with small adaptations
-M.lsp_matches = cached("lsp", function(_, _, _, _)
+M.lsp_matches = cached('lsp', function(line_to_cursor, lnum)
+  -- For lsp determining the preffix is painful, but thanks to the great @mfussenegger, we can fix
+  -- this all !
+  local function adjust_start_col(lnum, line, items, encoding)
+    local min_start_char = nil
+
+    for _, item in pairs(items) do
+      if item.textEdit and item.textEdit.range.start.line == lnum - 1 then
+        if min_start_char and min_start_char ~= item.textEdit.range.start.character then
+          return nil
+        end
+        min_start_char = item.textEdit.range.start.character
+      end
+    end
+    if min_start_char then
+      if encoding == 'utf-8' then
+        return min_start_char + 1
+      else
+        return vim.str_byteindex(line, min_start_char, encoding == 'utf-16') + 1
+      end
+    else
+      return nil
+    end
+  end
+
   local params = lsp.util.make_position_params()
-  local result_all, err = lsp.buf_request_sync(0, "textDocument/completion", params)
+  local result_all, err = lsp.buf_request_sync(0, 'textDocument/completion', params)
   assert(not err, vim.inspect(err))
   if not result_all then
     return
@@ -94,7 +118,7 @@ M.lsp_matches = cached("lsp", function(_, _, _, _)
     for _, item in pairs(items or {}) do
       local kind = lsp.protocol.CompletionItemKind[item.kind] or ""
       local word
-      if kind == "Snippet" then
+      if kind == 'Snippet' then
         word = item.label
       elseif item.insertTextFormat == 2 then
         if item.textEdit then
@@ -112,12 +136,12 @@ M.lsp_matches = cached("lsp", function(_, _, _, _)
         word = (item.textEdit and item.textEdit.newText) or item.insertText or item.label
       end
       item.client_id = client_id
-      item.source = "lsp"
+      item.source = 'lsp'
       table.insert(matches, {
         word = word,
         abbr = item.label,
         kind = kind,
-        menu = item.detail or "",
+        menu = item.detail or '',
         icase = 1,
         dup = 1,
         empty = 1,
@@ -223,10 +247,7 @@ M.filepath_matches = function(opts)
     local items = {}
     local path_entries
     for _, root_dir in ipairs(included_root_dirs) do
-      path_entries = scan_dir(
-        root_dir,
-        { max_depth = config.max_depth, ignore_hidden = config.ignore_hidden, match_patterns = config.match_patterns }
-      )
+      path_entries = scan_dir(root_dir, { max_depth = config.max_depth, ignore_hidden = config.ignore_hidden, match_patterns = config.match_patterns })
       for _, path in ipairs(path_entries) do
         items[#items + 1] = { root_dir = root_dir, path = path }
       end
@@ -251,6 +272,8 @@ M.filepath_matches = function(opts)
     return matches
   end)
 end
+
+M.filepath = M.create_filepath_source()
 
 -- CompleteDone handlers
 
