@@ -244,7 +244,10 @@ local ctags_extension = {
   },
 }
 
-M.ctags_matches = cached("ctags", function(_, _, _, _)
+M.ctags_matches = cached("ctags", function(line_to_cursor, _)
+  local pref_start = line_to_cursor:find '%w*$'
+  local prefix = line_to_cursor:sub(pref_start)
+
   local tag_files = fn.tagfiles()
   local tags = {}
   for _, tagfile in ipairs(tag_files) do
@@ -272,7 +275,7 @@ M.ctags_matches = cached("ctags", function(_, _, _, _)
     end
   end
 
-  return items
+  return items, prefix
 end)
 
 -- CompleteDone handlers
