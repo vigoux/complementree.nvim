@@ -1,4 +1,4 @@
-local utils = require'complementree.utils'
+local utils = require 'complementree.utils'
 local M = {}
 
 -- A function that returns a function that returns a function
@@ -7,7 +7,7 @@ local function mk_filter(func)
     return function(line, ltc, prefix, col)
       local orig = msource(line, ltc, prefix, col)
       local filtered = {}
-      for i,v in ipairs(orig) do
+      for i, v in ipairs(orig) do
         if func(i, v, prefix) then
           table.insert(filtered, v)
         end

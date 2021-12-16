@@ -6,7 +6,7 @@ local os = string.lower(jit.os)
 local os_sep = (os == "linux" or os == "osx" or os == "bsd") and "/" or "\\"
 
 function M.feed(codes)
-  api.nvim_feedkeys(api.nvim_replace_termcodes(codes, true, true, true), "m", true)
+  api.nvim_feedkeys(api.nvim_replace_termcodes(codes, true, true, true), 'm', true)
 end
 
 function M.cword(complete_item)

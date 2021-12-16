@@ -1,30 +1,30 @@
-local filters = require'complementree.filters'
-local utils = require'complementree.utils'
-require 'busted.runner' { output = "TAP", shuffle = true }
+local filters = require 'complementree.filters'
+local utils = require 'complementree.utils'
+require 'busted.runner' { output = 'TAP', shuffle = true }
 
 local function mk_compl_element(word)
   return {
     word = word,
-    kind = "mock",
+    kind = 'mock',
   }
 end
 
 local function run(source, line, cursor)
   local cursor_pos = cursor or #line
   local line_to_cursor = line:sub(1, cursor_pos)
-  local pref_start = line_to_cursor:find"%S*$"
+  local pref_start = line_to_cursor:find '%S*$'
   local prefix = line_to_cursor:sub(pref_start)
 
   local res = source(line, line_to_cursor, prefix, pref_start)
   local ret = {}
-  for _,r in pairs(res) do
+  for _, r in pairs(res) do
     table.insert(ret, utils.cword(r))
   end
 
   return ret
 end
 
-describe("filter", function()
+describe('filter', function()
   local mock_source
 
   before_each(function()
@@ -34,7 +34,7 @@ describe("filter", function()
         mk_compl_element 'foobar',
         mk_compl_element 'foobaz',
         mk_compl_element 'barbaz',
-        mk_compl_element 'baz'
+        mk_compl_element 'baz',
       }
     end)
   end)
@@ -58,7 +58,9 @@ describe("filter", function()
     end)
 
     it('does not error on empty', function()
-      local f = filters.prefix(function() return {} end)
+      local f = filters.prefix(function()
+        return {}
+      end)
       local res = run(f, '')
       assert.are.same(res, {})
     end)
@@ -66,7 +68,7 @@ describe("filter", function()
     it('matches completely', function()
       local f = filters.prefix(mock_source)
       local res = run(f, 'foobar')
-      assert.are.same(res, {'foobar'})
+      assert.are.same(res, { 'foobar' })
     end)
   end)
 
@@ -90,7 +92,9 @@ describe("filter", function()
     end)
 
     it('does not error on empty', function()
-      local f = filters.strict_prefix(function() return {} end)
+      local f = filters.strict_prefix(function()
+        return {}
+      end)
       local res = run(f, '')
       assert.are.same(res, {})
     end)
@@ -119,7 +123,9 @@ describe("filter", function()
     end)
 
     it('handles empty matches', function()
-      local f = filters.amount(2)(function() return {} end)
+      local f = filters.amount(2)(function()
+        return {}
+      end)
       local res = run(f, '')
       assert.are.same(res, {})
     end)

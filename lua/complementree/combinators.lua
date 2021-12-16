@@ -1,19 +1,19 @@
 local M = {}
 
-local ccomp = require'complementree.comparators'
-local filter = require'complementree.filters'
-local utils = require'complementree.utils'
+local ccomp = require 'complementree.comparators'
+local filter = require 'complementree.filters'
+local utils = require 'complementree.utils'
 
 local function filter_sort(matches, prefix, comparator, filterf)
   local filtered = {}
-  for i,v in ipairs(matches) do
+  for i, v in ipairs(matches) do
     if filterf(i, v, prefix) then
       table.insert(filtered, v)
     end
   end
   local cmp_cache = {}
-  table.sort(filtered, function(a,b)
-    local key = {a, b}
+  table.sort(filtered, function(a, b)
+    local key = { a, b }
 
     if not cmp_cache[key] then
       cmp_cache[key] = comparator(a, b, prefix)
@@ -38,7 +38,7 @@ function M.combine(...)
   local funcs = { ... }
   return function(...)
     local matches = {}
-    for _,f in pairs(funcs) do
+    for _, f in pairs(funcs) do
       local m = f(...)
       vim.list_extend(matches, m)
     end
@@ -77,7 +77,7 @@ end
 
 function M.pipeline(source, ...)
   local current = source
-  for _,func in ipairs { ... } do
+  for _, func in ipairs { ... } do
     current = func(current)
   end
 
@@ -87,7 +87,7 @@ end
 function M.chain(...)
   local funcs = { ... }
   return function(...)
-    for _,f in pairs(funcs) do
+    for _, f in pairs(funcs) do
       local c = f(...)
       if #c > 0 then
         return c

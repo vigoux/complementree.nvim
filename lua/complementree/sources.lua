@@ -1,6 +1,7 @@
 local M = {}
 
-local utils = require "complementree.utils"
+local utils = require 'complementree.utils'
+local comb = require 'complementree.combinators'
 local api = vim.api
 local lsp = vim.lsp
 
@@ -23,8 +24,8 @@ local function cached(kind, func)
   end
 end
 
-M.luasnip_matches = cached("luasnip", function(_, _, _, _)
-  local snippets = require("luasnip").available()
+M.luasnip_matches = cached('luasnip', function(_, _, _, _)
+  local snippets = require('luasnip').available()
 
   local items = {}
 
@@ -40,12 +41,12 @@ M.luasnip_matches = cached("luasnip", function(_, _, _, _)
     table.insert(items, {
       word = s.trigger,
       abbr = s.name,
-      kind = "S",
+      kind = 'S',
       menu = table.concat(s.description or {}),
       icase = 1,
       dup = 1,
       empty = 1,
-      user_data = { source = "luasnip" },
+      user_data = { source = 'luasnip' },
     })
   end
 
@@ -105,7 +106,7 @@ M.lsp_matches = cached("lsp", function(_, _, _, _)
 end)
 
 local function apply_snippet(item, suffix)
-  local luasnip = require "luasnip"
+  local luasnip = require 'luasnip'
   if item.textEdit then
     luasnip.lsp_expand(item.textEdit.newText .. suffix)
   elseif item.insertText then
@@ -136,7 +137,7 @@ local function lsp_completedone(completed_item)
       -- Remove the already inserted word
       local start_char = col - #completed_item.word
       local l = line
-      api.nvim_buf_set_text(bufnr, lnum, start_char, lnum, #l, { "" })
+      api.nvim_buf_set_text(bufnr, lnum, start_char, lnum, #l, { '' })
     end
     suffix = line:sub(col + 1)
   end
@@ -147,8 +148,8 @@ local function lsp_completedone(completed_item)
     if expand_snippet then
       apply_snippet(item, suffix)
     end
-  elseif resolveEdits and type(item) == "table" then
-    local v = client.request_sync("completionItem/resolve", item, 1000, bufnr)
+  elseif resolveEdits and type(item) == 'table' then
+    local v = client.request_sync('completionItem/resolve', item, 1000, bufnr)
     assert(not v.err, vim.inspect(v.err))
     if v.result.additionalTextEdits then
       tidy()
@@ -229,8 +230,8 @@ end
 -- CompleteDone handlers
 
 local function luasnip_completedone(_)
-  if require("luasnip").expandable() then
-    require("luasnip").expand()
+  if require('luasnip').expandable() then
+    require('luasnip').expand()
   end
 end
 
