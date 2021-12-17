@@ -110,10 +110,10 @@ function M.lsp_matches(opts)
     local result_all, err = lsp.buf_request_sync(0, 'textDocument/completion', params)
     if err then
       api.nvim_err_writeln(string.format('Error while completing lsp: %s', err))
-      return {}, ""
+      return {}, ''
     end
     if not result_all then
-      return {}, ""
+      return {}, ''
     end
 
     local matches = {}
@@ -318,7 +318,8 @@ function M.filepath_matches(opts)
           iter = iter_stack[#iter_stack]
           path = path_stack[#path_stack]
         elseif
-          (vim.startswith(next, '.') and not config.show_hidden) or (#config.ignore_pattern > 0 and next:find(config.ignore_pattern))
+          (vim.startswith(next, '.') and not config.show_hidden)
+          or (#config.ignore_pattern > 0 and next:find(config.ignore_pattern))
         then
           next = nil
           type = nil
