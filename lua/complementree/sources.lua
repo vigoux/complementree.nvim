@@ -338,11 +338,8 @@ M.filepath_matches = function(opts)
   end
 
   return cached('filepath', function(line_to_cursor, _)
-    -- local pref_start = line_to_cursor:find '%w*$'
     local pref_start = line_to_cursor:find(os_path)
-    print("A:" .. pref_start)
     local prefix = line_to_cursor:sub(pref_start)
-    print("B:" .. prefix)
 
     -- local items = {}
     local items = {}
