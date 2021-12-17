@@ -341,16 +341,10 @@ M.filepath_matches = function(opts)
     local pref_start = line_to_cursor:find(os_path)
     local prefix = line_to_cursor:sub(pref_start)
 
-    -- local items = {}
-    local items = {}
-    for path in iter_files() do
-      items[#items + 1] = path
-    end
-
     local cwd = vim.fn.getcwd()
     local fpath
     local matches = {}
-    for _, path in ipairs(items) do
+    for path in iter_files() do
       fpath = config.relative_paths and relpath(path, cwd) or path
 
       matches[#matches + 1] = {
