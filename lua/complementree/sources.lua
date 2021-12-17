@@ -290,7 +290,6 @@ function M.filepath_matches(opts)
     root_dirs = opts.root_dirs,
   }
 
-  print(vim.inspect(config))
   local function iter_files()
     local path_stack = vim.fn.reverse(config.root_dirs or { '.' })
     local iter_stack = {}
