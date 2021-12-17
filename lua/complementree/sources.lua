@@ -266,12 +266,14 @@ function M.ctags_matches(opts)
 
     return items, prefix
   end)
+end
+
 --
 
 local os = string.lower(jit.os)
 local is_linux = (os == 'linux' or os == 'osx' or os == 'bsd')
 local os_sep = is_linux and '/' or '\\'
-local os_path = '[' .. os_sep ..'%w+%-%.%_]*$'
+local os_path = '[' .. os_sep .. '%w+%-%.%_]*$'
 
 function M.filepath_matches(opts)
   local relpath = utils.make_relative_path
