@@ -271,73 +271,69 @@ function M.ctags_matches(opts)
 local os = string.lower(jit.os)
 local os_sep = (os == 'linux' or os == 'osx' or os == 'bsd') and '/' or '\\'
 
-local function iter_files(opts)
-  opts = vim.tbl_extend('force', {
-    show_hidden = false,
+M.filepath_matches = function(opts)
+  local relpath = utils.make_relative_path
+  opts = opts or {}
+  local config = {
+    show_hidden = opts.show_hidden or true,
     ignore_directories = true,
-    depth = math.huge,
+    max_depth = opts.max_depth or math.huge,
+    relative_paths = opts.relative_paths or false,
     ignore = '',
-  }, opts or {})
-  local path_stack = vim.fn.reverse(opts.root_dirs or { '.' })
-  local iter_stack = {}
-  for _, p in pairs(path_stack) do
-    table.insert(iter_stack, vim.loop.fs_scandir(p))
-  end
+    root_dirs = opts.root_dirs,
+  }
 
-  if opts.depth == 0 then
-    return function()
-      return nil
+  local function iter_files()
+    local path_stack = vim.fn.reverse(config.root_dirs or { '.' })
+    local iter_stack = {}
+    for _, p in pairs(path_stack) do
+      table.insert(iter_stack, vim.loop.fs_scandir(p))
     end
-  end
 
-  return function()
-    local iter = iter_stack[#iter_stack]
-    local path = path_stack[#path_stack]
-    while true do
-      local next, type = vim.loop.fs_scandir_next(iter)
+    if config.max_depth == 0 then
+      return function()
+        return nil
+      end
+    end
 
-      if not next then
-        table.remove(iter_stack)
-        table.remove(path_stack)
-        if #iter_stack == 0 then
-          return nil
-        end
-        iter = iter_stack[#iter_stack]
-        path = path_stack[#path_stack]
-      elseif (vim.startswith(next, '.') and not opts.allow_hidden) or (#opts.ignore > 0 and next:find(opts.ignore)) then
-        next = nil
-        type = nil
-      else
-        local full_path = path .. os_sep .. next
-        if type == 'directory' then
-          if #iter_stack < opts.depth then
-            iter = vim.loop.fs_scandir(full_path)
-            path = full_path
-            table.insert(path_stack, full_path)
-            table.insert(iter_stack, iter)
+    return function()
+      local iter = iter_stack[#iter_stack]
+      local path = path_stack[#path_stack]
+      while true do
+        local next, type = vim.loop.fs_scandir_next(iter)
+
+        if not next then
+          table.remove(iter_stack)
+          table.remove(path_stack)
+          if #iter_stack == 0 then
+            return nil
           end
-          if not opts.ignore_directories then
+          iter = iter_stack[#iter_stack]
+          path = path_stack[#path_stack]
+        elseif
+          (vim.startswith(next, '.') and not config.show_hidden) or (#config.ignore > 0 and next:find(config.ignore))
+        then
+          next = nil
+          type = nil
+        else
+          local full_path = path .. os_sep .. next
+          if type == 'directory' then
+            if #iter_stack < config.max_depth then
+              iter = vim.loop.fs_scandir(full_path)
+              path = full_path
+              table.insert(path_stack, full_path)
+              table.insert(iter_stack, iter)
+            end
+            if not config.ignore_directories then
+              return full_path
+            end
+          else
             return full_path
           end
-        else
-          return full_path
         end
       end
     end
   end
-end
-
-M.filepath_matches = function(opts)
-  local relpath = utils.make_relative_path -- TODO: use vims relpath?
-
-  opts = opts or {}
-  local config = {
-    max_depth = opts.max_depth or 8,
-    show_hidden = opts.show_hidden or true,
-    relative_paths = opts.relative_paths or false,
-    root_dirs = opts.root_dirs,
-    match_patterns = opts.match_patterns or {},
-  }
 
   return cached('filepath', function(line_to_cursor, _)
     local pref_start = line_to_cursor:find '%w*$'
