@@ -19,4 +19,23 @@ function M.make_relative_path(path, root)
   return path
 end
 
+local P = {}
+
+function P.lua_regex(regex, line)
+  local pref_start = line:find(regex)
+  local prefix = line:sub(pref_start)
+
+  return prefix
+end
+
+function P.vim_keyword(line)
+  local pref_start = vim.fn.match(line, '\\k*$') + 1
+  local prefix = line:sub(pref_start)
+
+  return prefix
+end
+
+
+M.prefix = P
+
 return M

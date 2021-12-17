@@ -47,9 +47,7 @@ function M.luasnip_matches(opts)
   return cached('luasnip', function(line_to_cursor, _)
     local snippets = require('luasnip').available()
 
-    local pref_start = line_to_cursor:find '%w*$'
-    local prefix = line_to_cursor:sub(pref_start)
-
+    local prefix = utils.prefix.lua_regex('%w*$', line_to_cursor)
     local items = {}
 
     -- Luasnip format:
@@ -254,8 +252,7 @@ local ctags_extension = {
 function M.ctags_matches(opts)
   opts = options.get({}, opts)
   return cached('ctags', function(line_to_cursor, _)
-    local pref_start = vim.fn.match(line_to_cursor, '\\k*$') + 1
-    local prefix = line_to_cursor:sub(pref_start)
+    local prefix = utils.prefix.vim_keyword(line_to_cursor)
 
     local filetype = vim.bo.filetype
     local extensions = ctags_extension[filetype] or ctags_extension.default
@@ -350,8 +347,7 @@ function M.filepath_matches(opts)
   end
 
   return cached('filepath', function(line_to_cursor, _)
-    local pref_start = line_to_cursor:find(os_path)
-    local prefix = line_to_cursor:sub(pref_start)
+    local prefix = utils.prefix.lua_regex(os_path, line_to_cursor)
 
     local cwd = vim.fn.getcwd()
     local fpath
