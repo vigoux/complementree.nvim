@@ -1,6 +1,7 @@
 local M = {}
 
 local utils = require 'complementree.utils'
+local options = require 'complementree.options'
 local api = vim.api
 local lsp = vim.lsp
 
@@ -39,6 +40,10 @@ end
 -- filetype: forces the filetype as a source
 -- exclude_default: don't include the default snippets
 function M.luasnip_matches(opts)
+  opts = options.get({
+    exclude_defaults = false,
+    filetype = nil,
+  }, opts)
   return cached('luasnip', function(line_to_cursor, _)
     local snippets = require('luasnip').available()
 
@@ -81,6 +86,7 @@ end
 
 -- Shamelessly stollen from https://github.com/mfussenegger/nvim-lsp-compl with small adaptations
 function M.lsp_matches(opts)
+  opts = options.get({}, opts)
   return cached('lsp', function(line_to_cursor, lnum)
     -- For lsp determining the preffix is painful, but thanks to the great @mfussenegger, we can fix
     -- this all !
@@ -246,6 +252,7 @@ local ctags_extension = {
 }
 
 function M.ctags_matches(opts)
+  opts = options.get({}, opts)
   return cached('ctags', function(line_to_cursor, _)
     local pref_start = vim.fn.match(line_to_cursor, '\\k*$') + 1
     local prefix = line_to_cursor:sub(pref_start)
@@ -280,15 +287,14 @@ local os_path = '[' .. os_sep .. '%w+%-%.%_]*$'
 
 function M.filepath_matches(opts)
   local relpath = utils.make_relative_path
-  opts = opts or {}
-  local config = {
-    show_hidden = opts.show_hidden or false,
-    ignore_directories = opts.ignore_directories or true,
-    max_depth = opts.max_depth or math.huge,
-    relative_paths = opts.relative_paths or false,
+  local config = options.get({
+    show_hidden = false,
+    ignore_directories = true,
+    max_depth = math.huge,
+    relative_paths = false,
     ignore_pattern = '',
-    root_dirs = opts.root_dirs,
-  }
+    root_dirs = { '.' },
+  }, opts)
 
   local function iter_files()
     local path_stack = vim.fn.reverse(config.root_dirs or { '.' })
