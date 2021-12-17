@@ -282,14 +282,15 @@ function M.filepath_matches(opts)
   local relpath = utils.make_relative_path
   opts = opts or {}
   local config = {
-    show_hidden = opts.show_hidden or true,
+    show_hidden = opts.show_hidden or false,
     ignore_directories = opts.ignore_directories or true,
     max_depth = opts.max_depth or math.huge,
     relative_paths = opts.relative_paths or false,
-    ignore = '',
+    ignore_pattern = '',
     root_dirs = opts.root_dirs,
   }
 
+  print(vim.inspect(config))
   local function iter_files()
     local path_stack = vim.fn.reverse(config.root_dirs or { '.' })
     local iter_stack = {}
@@ -318,7 +319,7 @@ function M.filepath_matches(opts)
           iter = iter_stack[#iter_stack]
           path = path_stack[#path_stack]
         elseif
-          (vim.startswith(next, '.') and config.show_hidden) or (#config.ignore > 0 and next:find(config.ignore))
+          (vim.startswith(next, '.') and config.show_hidden == false) or (#config.ignore_pattern > 0 and next:find(config.ignore_pattern))
         then
           next = nil
           type = nil
