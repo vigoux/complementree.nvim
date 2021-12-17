@@ -348,14 +348,14 @@ M.filepath_matches = function(opts)
     end
 
     local cwd = vim.fn.getcwd()
-    local display_path
+    local fpath
     local matches = {}
     for _, path in ipairs(items) do
-      display_path = config.relative_paths and relpath(path, cwd) or path
+      fpath = config.relative_paths and relpath(path, cwd) or path
 
       matches[#matches + 1] = {
-        word = path,
-        abbr = display_path,
+        word = fpath,
+        abbr = fpath,
         kind = '[path]',
         icase = 1,
         dup = 1,
