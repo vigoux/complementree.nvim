@@ -241,29 +241,31 @@ local ctags_extension = {
   },
 }
 
-M.ctags_matches = cached('ctags', function(line_to_cursor, _)
-  local pref_start = line_to_cursor:find '%w*$'
-  local prefix = line_to_cursor:sub(pref_start)
+function M.ctags_matches(opts)
+  return cached('ctags', function(line_to_cursor, _)
+    local pref_start = line_to_cursor:find '%w*$'
+    local prefix = line_to_cursor:sub(pref_start)
 
-  local filetype = vim.bo.filetype
-  local extensions = ctags_extension[filetype] or ctags_extension.default
-  local tags = vim.fn.taglist '.*'
+    local filetype = vim.bo.filetype
+    local extensions = ctags_extension[filetype] or ctags_extension.default
+    local tags = vim.fn.taglist '.*'
 
-  local items = {}
-  for _, t in ipairs(tags) do
-    items[#items + 1] = {
-      word = t.name,
-      abbr = t.name,
-      kind = (t.kind and extensions[t.kind] or 'undefined'),
-      icase = 0,
-      dup = 0,
-      empty = 1,
-      user_data = { source = 'ctags' },
-    }
-  end
+    local items = {}
+    for _, t in ipairs(tags) do
+      items[#items + 1] = {
+        word = t.name,
+        kind = (t.kind and extensions[t.kind] or 'undefined'),
+        icase = 1,
+        dup = 0,
+        equals = 1,
+        empty = 1,
+        user_data = { source = 'ctags' },
+      }
+    end
 
-  return items, prefix
-end)
+    return items, prefix
+  end)
+end
 
 -- CompleteDone handlers
 
