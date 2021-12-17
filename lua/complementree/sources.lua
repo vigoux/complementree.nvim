@@ -318,7 +318,7 @@ function M.filepath_matches(opts)
           iter = iter_stack[#iter_stack]
           path = path_stack[#path_stack]
         elseif
-          (vim.startswith(next, '.') and not config.show_hidden) or (#config.ignore > 0 and next:find(config.ignore))
+          (vim.startswith(next, '.') and config.show_hidden) or (#config.ignore > 0 and next:find(config.ignore))
         then
           next = nil
           type = nil
