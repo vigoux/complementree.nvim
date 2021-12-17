@@ -1,9 +1,6 @@
 local M = {}
 
-<<<<<<< HEAD
-=======
 local utils = require 'complementree.utils'
->>>>>>> 1c63645 (feat: path completion take 2)
 local api = vim.api
 local lsp = vim.lsp
 
@@ -269,56 +266,98 @@ function M.ctags_matches(opts)
 
     return items, prefix
   end)
+--
+
+local os = string.lower(jit.os)
+local os_sep = (os == 'linux' or os == 'osx' or os == 'bsd') and '/' or '\\'
+
+local function iter_files(opts)
+  opts = vim.tbl_extend('force', {
+    show_hidden = false,
+    ignore_directories = true,
+    depth = math.huge,
+    ignore = '',
+  }, opts or {})
+  local path_stack = vim.fn.reverse(opts.root_dirs or { '.' })
+  local iter_stack = {}
+  for _, p in pairs(path_stack) do
+    table.insert(iter_stack, vim.loop.fs_scandir(p))
+  end
+
+  if opts.depth == 0 then
+    return function()
+      return nil
+    end
+  end
+
+  return function()
+    local iter = iter_stack[#iter_stack]
+    local path = path_stack[#path_stack]
+    while true do
+      local next, type = vim.loop.fs_scandir_next(iter)
+
+      if not next then
+        table.remove(iter_stack)
+        table.remove(path_stack)
+        if #iter_stack == 0 then
+          return nil
+        end
+        iter = iter_stack[#iter_stack]
+        path = path_stack[#path_stack]
+      elseif (vim.startswith(next, '.') and not opts.allow_hidden) or (#opts.ignore > 0 and next:find(opts.ignore)) then
+        next = nil
+        type = nil
+      else
+        local full_path = path .. os_sep .. next
+        if type == 'directory' then
+          if #iter_stack < opts.depth then
+            iter = vim.loop.fs_scandir(full_path)
+            path = full_path
+            table.insert(path_stack, full_path)
+            table.insert(iter_stack, iter)
+          end
+          if not opts.ignore_directories then
+            return full_path
+          end
+        else
+          return full_path
+        end
+      end
+    end
+  end
 end
 
 M.filepath_matches = function(opts)
   local relpath = utils.make_relative_path -- TODO: use vims relpath?
-  local scan_dir = utils.scan_dir
 
   opts = opts or {}
   local config = {
     max_depth = opts.max_depth or 8,
-    ignore_hidden = opts.ignore_hidden or true,
-    relative_paths = opts.relative_paths or true,
+    show_hidden = opts.show_hidden or true,
+    relative_paths = opts.relative_paths or false,
     root_dirs = opts.root_dirs,
     match_patterns = opts.match_patterns or {},
   }
 
-  return cached('filepath', function(_, _, _, _)
-    local included_root_dirs = {}
+  return cached('filepath', function(line_to_cursor,_)
 
-    if config.root_dirs then
-      included_root_dirs = config.root_dirs
-    else
-      local lsp_buf_clients = vim.lsp.buf_get_clients()
-      if #lsp_buf_clients > 0 then
-        for _, client in pairs(lsp_buf_clients) do
-          included_root_dirs[#included_root_dirs + 1] = client.config.root_dir
-        end
-      else
-        included_root_dirs[1] = '.'
-      end
-    end
+    local pref_start = line_to_cursor:find '%w*$'
+    local prefix = line_to_cursor:sub(pref_start)
 
+    -- local items = {}
     local items = {}
-    local path_entries
-    for _, root_dir in ipairs(included_root_dirs) do
-      path_entries = scan_dir(
-        root_dir,
-        { max_depth = config.max_depth, ignore_hidden = config.ignore_hidden, match_patterns = config.match_patterns }
-      )
-      for _, path in ipairs(path_entries) do
-        items[#items + 1] = { root_dir = root_dir, path = path }
-      end
+    for path in iter_files(opts) do
+      items[#items + 1] = path
     end
 
+    local cwd = vim.fn.getcwd()
     local display_path
     local matches = {}
-    for _, i in ipairs(items) do
-      display_path = config.relative_paths and relpath(i.path, i.root_dir) or i.path
+    for _, path in ipairs(items) do
+      display_path = config.relative_paths and relpath(path, cwd) or path
 
       matches[#matches + 1] = {
-        word = i.path,
+        word = path,
         abbr = display_path,
         kind = '[path]',
         icase = 1,
@@ -329,7 +368,7 @@ M.filepath_matches = function(opts)
       }
     end
 
-    return matches
+    return matches, prefix
   end)
 end
 
