@@ -23,6 +23,6 @@ M.lsp = comb.pipeline(sources.lsp_matches {}, filters.prefix, comp.alphabetic)
 
 M.ctags = comb.pipeline(sources.ctags_matches {}, filters.prefix, comp.alphabetic)
 
-M.filepath = comb.pipeline(sources.filepath_matches(), filters.substr, comp.alphabetic)
+M.filepath = comb.pipeline(sources.filepath_matches {}, filters.substr, comp.alphabetic)
 
 return M
