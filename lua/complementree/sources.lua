@@ -243,7 +243,7 @@ local ctags_extension = {
 
 function M.ctags_matches(opts)
   return cached('ctags', function(line_to_cursor, _)
-    local pref_start = line_to_cursor:find '%w*$'
+    local pref_start = vim.fn.match(line_to_cursor, '\\k*$') + 1
     local prefix = line_to_cursor:sub(pref_start)
 
     local filetype = vim.bo.filetype
