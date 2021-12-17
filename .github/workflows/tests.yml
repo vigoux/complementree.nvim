@@ -19,13 +19,6 @@ jobs:
         extra_nix_config: |
           access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
 
-    - name: Cache multiple paths
-      uses: actions/cache@v2
-      with:
-        path: |
-          /nix/store/
-        key: ${{ runner.os }}
-
     - name: Run tests
       run: |
         nix-shell --pure --run "make test"
