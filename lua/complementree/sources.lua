@@ -247,9 +247,10 @@ M.ctags_matches = cached('ctags', function(line_to_cursor, _)
   local pref_start = line_to_cursor:find '%w*$'
   local prefix = line_to_cursor:sub(pref_start)
 
+  local filetype = vim.bo.filetype
+  filetype = ctags_extension.filetype or 'default'
   local tags = vim.fn.taglist '.*'
 
-  local filetype = 'default'
   local items = {}
   for _, t in ipairs(tags) do
     items[#items + 1] = {
