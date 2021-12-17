@@ -273,7 +273,7 @@ local is_linux = (os == 'linux' or os == 'osx' or os == 'bsd')
 local os_sep = is_linux and '/' or '\\'
 local os_path = '[' .. os_sep ..'%w+%-%.%_]*$'
 
-M.filepath_matches = function(opts)
+function M.filepath_matches(opts)
   local relpath = utils.make_relative_path
   opts = opts or {}
   local config = {
