@@ -283,7 +283,7 @@ function M.filepath_matches(opts)
   opts = opts or {}
   local config = {
     show_hidden = opts.show_hidden or true,
-    ignore_directories = true,
+    ignore_directories = opts.ignore_directories or true,
     max_depth = opts.max_depth or math.huge,
     relative_paths = opts.relative_paths or false,
     ignore = '',
