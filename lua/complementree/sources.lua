@@ -108,9 +108,12 @@ function M.lsp_matches(opts)
 
     local params = lsp.util.make_position_params()
     local result_all, err = lsp.buf_request_sync(0, 'textDocument/completion', params)
-    assert(not err, vim.inspect(err))
+    if err then
+      api.nvim_err_writeln(string.format('Error while completing lsp: %s', err))
+      return {}, ""
+    end
     if not result_all then
-      return
+      return {}, ""
     end
 
     local matches = {}
