@@ -1,7 +1,5 @@
 local M = {}
 
-local utils = require 'complementree.utils'
-local comb = require 'complementree.combinators'
 local api = vim.api
 local lsp = vim.lsp
 
@@ -248,7 +246,7 @@ M.ctags_matches = cached('ctags', function(line_to_cursor, _)
   local prefix = line_to_cursor:sub(pref_start)
 
   local filetype = vim.bo.filetype
-  filetype = ctags_extension.filetype or 'default'
+  local extensions = ctags_extension[filetype] or ctags_extension.default
   local tags = vim.fn.taglist '.*'
 
   local items = {}
@@ -256,7 +254,7 @@ M.ctags_matches = cached('ctags', function(line_to_cursor, _)
     items[#items + 1] = {
       word = t.name,
       abbr = t.name,
-      kind = (t.kind and ctags_extension[filetype][t.kind] or 'undefined'),
+      kind = (t.kind and extensions[t.kind] or 'undefined'),
       icase = 0,
       dup = 0,
       empty = 1,
