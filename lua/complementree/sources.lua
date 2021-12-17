@@ -339,8 +339,7 @@ M.filepath_matches = function(opts)
     match_patterns = opts.match_patterns or {},
   }
 
-  return cached('filepath', function(line_to_cursor,_)
-
+  return cached('filepath', function(line_to_cursor, _)
     local pref_start = line_to_cursor:find '%w*$'
     local prefix = line_to_cursor:sub(pref_start)
 
