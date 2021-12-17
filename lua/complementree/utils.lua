@@ -10,9 +10,11 @@ function M.cword(complete_item)
 end
 
 function M.make_relative_path(path, root)
-  local baselen = #root
-  if path:sub(0, baselen) == root then
-    path = path:sub(baselen + 2)
+  if  vim.startswith(path, root) then
+    local baselen = #root
+    if path:sub(0, baselen) == root then
+      path = path:sub(baselen + 2)
+    end
   end
   return path
 end
