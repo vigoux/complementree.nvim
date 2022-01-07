@@ -23,9 +23,10 @@ local function cached(kind, func)
       -- in order to include the added character
       -- FIXME(vigoux): this is not right, we lose the whole "prefix resolution" thing by
       -- only using a regex here. But I think it is fine, for performanace reasons
-      local new_p_extractor = string.format('%s%%a+$', p)
-      local pref_start = ltc:find(new_p_extractor)
-      p = ltc:sub(pref_start)
+      local pref_start = vim.fn.match(ltc, p .. '\\k*$') + 1
+      if pref_start >= 1 then
+        p = ltc:sub(pref_start)
+      end
     end
     local new = {}
     for _, v in pairs(m) do
