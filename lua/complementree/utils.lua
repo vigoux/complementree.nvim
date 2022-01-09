@@ -35,7 +35,6 @@ function P.vim_keyword(line)
   return prefix
 end
 
-
 M.prefix = P
 
 return M
