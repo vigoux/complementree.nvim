@@ -183,7 +183,7 @@ local function apply_snippet(item, suffix, lnum)
   end
   vim.schedule(function()
     local curline = api.nvim_get_current_line()
-    if vim.endswith(curline, suffix) then
+    if vim.endswith(curline, suffix) and not luasnip.get_active_snip() then
       local newcol = #curline - #suffix
       api.nvim_win_set_cursor(0, { lnum + 1, newcol })
     end
