@@ -172,7 +172,7 @@ function M.lsp_matches(opts)
   end)
 end
 
-local function apply_snippet(item, suffix)
+local function apply_snippet(item, suffix, lnum)
   local luasnip = require 'luasnip'
   if item.textEdit then
     luasnip.lsp_expand(item.textEdit.newText .. suffix)
@@ -181,6 +181,13 @@ local function apply_snippet(item, suffix)
   elseif item.label then
     luasnip.lsp_expand(item.label .. suffix)
   end
+  vim.schedule(function()
+    local curline = api.nvim_get_current_line()
+    if vim.endswith(curline, suffix) then
+      local newcol = #curline - #suffix
+      api.nvim_win_set_cursor(0, { lnum + 1, newcol })
+    end
+  end)
 end
 
 local function lsp_completedone(completed_item)
@@ -213,7 +220,7 @@ local function lsp_completedone(completed_item)
     tidy()
     lsp.util.apply_text_edits(item.additionalTextEdits, bufnr)
     if expand_snippet then
-      apply_snippet(item, suffix)
+      apply_snippet(item, suffix, lnum)
     end
   elseif resolveEdits and type(item) == 'table' then
     local v = client.request_sync('completionItem/resolve', item, 1000, bufnr)
@@ -225,11 +232,11 @@ local function lsp_completedone(completed_item)
     end
     if expand_snippet then
       tidy()
-      apply_snippet(item, suffix)
+      apply_snippet(item, suffix, lnum)
     end
   elseif expand_snippet then
     tidy()
-    apply_snippet(item, suffix)
+    apply_snippet(item, suffix, lnum)
   end
 end
 
