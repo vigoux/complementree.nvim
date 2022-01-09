@@ -73,6 +73,12 @@ function as input:
 The currently implemented matches functions are:
 - `lsp_matches`: for lsp-only matches
 - `luasnip_matches`: for LuaSnip matches.
+- `filetype_matches`: for files under the current directory
+- `ctags_matches`: for matches in the current tagfile
+
+All the `_matches` function take a table of options as parameters, dig
+into the [sources file](./lua/complementree/sources.lua) for more info
+about that.
 
 Using combinators, you can complete using LSP + LuaSnip with the
 following:
@@ -81,7 +87,7 @@ following:
 local s = require"complementree.sources"
 local cc = require"complementree.combinators"
 
-lsp_and_luasnip = cc.combine(s.luasnip_matches, s.lsp_matches)
+lsp_and_luasnip = cc.combine(s.luasnip_matches {}, s.lsp_matches {})
 ```
 
 ## Filtering and sorting results
@@ -145,12 +151,12 @@ all combinators in the `...` one by one.
 
 Fuzzy LSP:
 ```lua
-combinators.pipeline(sources.lsp_matches, comparators.fzy, filters.amount(6))
+combinators.pipeline(sources.lsp_matches {}, comparators.fzy, filters.amount(6))
 ```
 
 Fuzzy LSP and LuaSnip only if LSP returns something:
 ```lua
-combinators.pipeline(combinators.optional(source.lsp_matches, source.luasnip_matches), comparators.fzy, filters.amount(6))
+combinators.pipeline(combinators.optional(source.lsp_matches {}, source.luasnip_matches {}), comparators.fzy, filters.amount(6))
 ```
 
 Look in the [defaults file](./lua/complementree/defaults.lua) for
