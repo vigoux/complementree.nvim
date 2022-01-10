@@ -46,6 +46,8 @@ We define a set of `sources` that are triggered when calling the
 The defaults are:
 - `lsp`: lsp-only source, with LSP snippets enabled
 - `luasnip`: luasnip snippets
+- `ctags`: tagfile elements, a more configurable form of `<C-X><C-]>`
+- `filepath`: paths under the current directory
 - `dummy`: nothing
 - `ins_completion`: trigger a `<C-X><C-*>` completion
 
@@ -73,7 +75,7 @@ function as input:
 The currently implemented matches functions are:
 - `lsp_matches`: for lsp-only matches
 - `luasnip_matches`: for LuaSnip matches.
-- `filetype_matches`: for files under the current directory
+- `filepath_matches`: for files under the current directory
 - `ctags_matches`: for matches in the current tagfile
 
 All the `_matches` function take a table of options as parameters, dig
