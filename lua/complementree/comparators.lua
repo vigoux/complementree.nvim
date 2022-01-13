@@ -38,7 +38,7 @@ if ok_fzy then
         local matching = {}
         for _, a in ipairs(orig) do
           local s = fzy.score(prefix, utils.cword(a), is_case_sensitive)
-          if math.abs(s) ~= math.huge then
+          if math.abs(s) ~= math.huge and prefix ~= utils.cword(a) then
             scores[a] = s
             table.insert(matching, a)
           end
