@@ -202,6 +202,7 @@ local function lsp_completedone(completed_item)
   end
 
   local resolveEdits = (client.server_capabilities.completionProvider or {}).resolveProvider
+  local offset_encoding = client and client.offset_encoding or 'utf-16'
 
   local tidy = function() end
   local suffix = nil
@@ -218,7 +219,7 @@ local function lsp_completedone(completed_item)
 
   if item.additionalTextEdits then
     tidy()
-    lsp.util.apply_text_edits(item.additionalTextEdits, bufnr)
+    lsp.util.apply_text_edits(item.additionalTextEdits, bufnr, offset_encoding)
     if expand_snippet then
       apply_snippet(item, suffix, lnum)
     end
@@ -228,7 +229,7 @@ local function lsp_completedone(completed_item)
     if v.result.additionalTextEdits then
       tidy()
       tidy = function() end
-      lsp.util.apply_text_edits(v.result.additionalTextEdits, bufnr)
+      lsp.util.apply_text_edits(v.result.additionalTextEdits, bufnr, offset_encoding)
     end
     if expand_snippet then
       tidy()
