@@ -6,7 +6,7 @@ function M.feed(codes)
 end
 
 function M.cword(complete_item)
-  return (complete_item.word or complete_item.abbr)
+  return (complete_item.abbr or complete_item.word)
 end
 
 function M.make_relative_path(path, root)
