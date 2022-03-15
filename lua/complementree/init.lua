@@ -69,7 +69,7 @@ local function get_completion(ft, line_to_cursor, lnum, col)
 
       local t = node_type_at_cursor(l, c)
       if not t then
-        return
+        return ft_completion.default
       end
       local sub_completion = ft_completion[t] or ft_completion.default
       if sub_completion then
