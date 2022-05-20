@@ -45,9 +45,21 @@ function M.luasnip_matches(opts)
     exclude_defaults = false,
     filetype = nil,
   }, opts)
-  return cached('luasnip', function(line_to_cursor, _)
-    local snippets = require('luasnip').available()
 
+  local function add_snippet(items, s)
+    table.insert(items, {
+      word = s.trigger,
+      kind = 'S',
+      menu = table.concat(s.description or {}),
+      icase = 1,
+      dup = 1,
+      empty = 1,
+      equal = 1,
+      user_data = { source = 'luasnip' },
+    })
+  end
+
+  return cached('luasnip', function(line_to_cursor, _)
     local prefix = utils.prefix.lua_regex('%w*$', line_to_cursor)
     local items = {}
 
@@ -59,25 +71,12 @@ function M.luasnip_matches(opts)
     --  trigger = string,
     --  wordTrig = bool
     -- }
-    local function add_snippet(s)
-      table.insert(items, {
-        word = s.trigger,
-        abbr = s.name,
-        kind = 'S',
-        menu = table.concat(s.description or {}),
-        icase = 1,
-        dup = 1,
-        empty = 1,
-        equal = 1,
-        user_data = { source = 'luasnip' },
-      })
-    end
 
-    source_ft = opts.filetype or api.nvim_buf_get_option(0, 'filetype')
-    if not opts.exclude_default then
-      vim.tbl_map(add_snippet, snippets.all)
+    for ftname, snips in pairs(require('luasnip').available()) do
+      if not (ftname == 'all' and opts.exclude_defaults) then
+        vim.tbl_map(function (s) add_snippet(items, s) end, snips)
+      end
     end
-    vim.tbl_map(add_snippet, snippets[source_ft])
 
     return items, prefix
   end)
