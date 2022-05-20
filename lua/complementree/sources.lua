@@ -74,7 +74,9 @@ function M.luasnip_matches(opts)
 
     for ftname, snips in pairs(require('luasnip').available()) do
       if not (ftname == 'all' and opts.exclude_defaults) then
-        vim.tbl_map(function (s) add_snippet(items, s) end, snips)
+        vim.tbl_map(function(s)
+          add_snippet(items, s)
+        end, snips)
       end
     end
 
