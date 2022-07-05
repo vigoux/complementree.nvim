@@ -36,17 +36,21 @@ if ok_fzy then
         local orig, prefix = msource(ltc, lnum)
         local scores = {}
         local matching = {}
-        for _, a in ipairs(orig) do
-          local s = fzy.score(prefix, utils.cword(a), is_case_sensitive)
-          if math.abs(s) ~= math.huge and prefix ~= utils.cword(a) then
-            scores[a] = s
-            table.insert(matching, a)
+        if prefix ~= "" then
+          for _, a in ipairs(orig) do
+            local s = fzy.score(prefix, utils.cword(a), is_case_sensitive)
+            if math.abs(s) ~= math.huge or prefix == utils.cword(a) then
+              scores[a] = s
+              table.insert(matching, a)
+            end
           end
+          table.sort(matching, function(a, b)
+            return scores[a] > scores[b]
+          end)
+          return matching, prefix
+        else
+          return orig, prefix
         end
-        table.sort(matching, function(a, b)
-          return scores[a] > scores[b]
-        end)
-        return matching, prefix
       end
     end
   end
