@@ -1,40 +1,42 @@
-local M = {}
 local api = vim.api
 
-function M.feed(codes)
-  api.nvim_feedkeys(api.nvim_replace_termcodes(codes, true, true, true), 'm', true)
+local Prefix = {}
+
+
+function Prefix.lua_regex(regex, line)
+   local pref_start = line:find(regex)
+   local prefix = line:sub(pref_start)
+
+   return prefix
 end
 
-function M.cword(complete_item)
-  return (complete_item.abbr or complete_item.word)
+function Prefix.vim_keyword(line)
+   local pref_start = vim.fn.match(line, '\\k*$') + 1
+   local prefix = line:sub(pref_start)
+
+   return prefix
 end
 
-function M.make_relative_path(path, root)
-  if vim.startswith(path, root) then
-    local baselen = #root
-    if path:sub(0, baselen) == root then
-      path = path:sub(baselen + 2)
-    end
-  end
-  return path
+local Utils = {}
+
+
+
+function Utils.feed(codes)
+   api.nvim_feedkeys(api.nvim_replace_termcodes(codes, true, true, true), 'm', true)
 end
 
-local P = {}
-
-function P.lua_regex(regex, line)
-  local pref_start = line:find(regex)
-  local prefix = line:sub(pref_start)
-
-  return prefix
+function Utils.cword(complete_item)
+   return (complete_item.abbr or complete_item.word)
 end
 
-function P.vim_keyword(line)
-  local pref_start = vim.fn.match(line, '\\k*$') + 1
-  local prefix = line:sub(pref_start)
-
-  return prefix
+function Utils.make_relative_path(path, root)
+   if vim.startswith(path, root) then
+      local baselen = #root
+      if path:sub(0, baselen) == root then
+         path = path:sub(baselen + 2)
+      end
+   end
+   return path
 end
 
-M.prefix = P
-
-return M
+return Utils

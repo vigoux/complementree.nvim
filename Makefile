@@ -1,8 +1,11 @@
-lint:
-	stylua -c .
+build:
+	tl build
 
-format:
-	stylua .
+check:
+	tl check teal/**/*.tl
+
+ensure: build
+	git diff --exit-code -- lua
 
 test:
 	./run_tests.sh
