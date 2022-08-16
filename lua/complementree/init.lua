@@ -141,8 +141,10 @@ function M._CompleteDone()
    if not completed_item or not completed_item.user_data or not completed_item.user_data.source then
       return
    end
+   vim.notify("CompleteDone")
    local func = sources.complete_done_cbs[completed_item.user_data.source]
    if func then
+      vim.notify("CompleteDone found")
 
 
 

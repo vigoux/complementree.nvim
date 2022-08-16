@@ -428,20 +428,23 @@ local function lsp_completedone(completed_item)
    local cursor = api.nvim_win_get_cursor(0)
    local col = cursor[2]
    local lnum = cursor[1] - 1
-   local item = completed_item.user_data
    local bufnr = api.nvim_get_current_buf()
-   local expand_snippet = item.insertTextFormat == 2
 
-   local client = lsp.get_client_by_id()
+   local extra = completed_item.user_data.extra
+   local item = extra.item
+
+   local client = lsp.get_client_by_id(extra.client_id)
    if not client then
-      return
+      error(string.format("Could not find client %d", extra.client_id))
    end
 
+   local expand_snippet = item.insertTextFormat == 2
    local resolveEdits = (client.server_capabilities.completionProvider or {}).resolveProvider
    local offset_encoding = client and client.offset_encoding or 'utf-16'
 
    local tidy = function() end
    local suffix = nil
+
    if expand_snippet then
       local line = api.nvim_buf_get_lines(bufnr, lnum, lnum + 1, true)[1]
       tidy = function()

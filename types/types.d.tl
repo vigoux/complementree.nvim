@@ -150,6 +150,9 @@ global record vim
   tbl_map: function<T>(function(T), {T})
 
   list_extend: function<T>({T}, {T}, integer|nil, integer|nil): {T}
+
+  notify: function(string)
+  pretty_print: function(...: any)
   inspect: function(...: any): string
 end
 
