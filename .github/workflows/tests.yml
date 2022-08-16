@@ -19,6 +19,12 @@ jobs:
         extra_nix_config: |
           access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
 
+    - name: Cache nix store
+      uses: actions/cache@v3
+      with:
+        path: /nix/store
+        key: ${{ runner.os }}
+
     - name: Check teal files
       run: |
         nix-shell --pure --run "make ensure"
