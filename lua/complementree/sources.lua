@@ -388,7 +388,7 @@ function Sources.treesitter_matches(opts)
    local _config = options.get({}, opts)
 
    return cached('treesitter', function(line_to_cursor, _lnum)
-      local prefix = utils.prefix.vim_keyword(line_to_cursor)
+      local prefix = utils.prefix.lua_regex('%S*$', line_to_cursor)
       local defs = tslocals.get_definitions(0)
 
       local items = {}
