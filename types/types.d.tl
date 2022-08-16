@@ -134,6 +134,10 @@ global record vim
       iter_captures: function(TSQuery, TSNode, integer, integer|nil, integer|nil, integer|nil, integer|nil): function(): integer, TSNode
     end
 
+    record query
+      get_node_text: function(TSNode, integer|nil): string
+    end
+
     parse_query: function(string, string): TSQuery
   end
 

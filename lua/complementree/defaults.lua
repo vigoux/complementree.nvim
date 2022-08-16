@@ -7,6 +7,7 @@ local Defaults = {}
 
 
 
+
 local comb = require('complementree.combinators')
 local sources = require('complementree.sources')
 local filters = require('complementree.filters')
@@ -31,5 +32,7 @@ Defaults.lsp = comb.pipeline(sources.lsp_matches({}), filters.prefix, comp.alpha
 Defaults.ctags = comb.pipeline(sources.ctags_matches({}), filters.prefix, comp.alphabetic)
 
 Defaults.filepath = comb.pipeline(sources.filepath_matches({}), filters.substr, comp.alphabetic)
+
+Defaults.treesitter = comb.pipeline(sources.treesitter_matches({}), filters.substr, comp.alphabetic)
 
 return Defaults

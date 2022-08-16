@@ -20,7 +20,12 @@ local FilepathOptions = {}
 
 
 
+local TreesitterOptions = {}
+
+
+
 local Sources = {}
+
 
 
 
@@ -235,60 +240,6 @@ local function apply_snippet(item, suffix, lnum)
    end)
 end
 
-local function lsp_completedone(completed_item)
-   local cursor = api.nvim_win_get_cursor(0)
-   local col = cursor[2]
-   local lnum = cursor[1] - 1
-   local item = completed_item.user_data
-   local bufnr = api.nvim_get_current_buf()
-   local expand_snippet = item.insertTextFormat == 2
-
-   local client = lsp.get_client_by_id()
-   if not client then
-      return
-   end
-
-   local resolveEdits = (client.server_capabilities.completionProvider or {}).resolveProvider
-   local offset_encoding = client and client.offset_encoding or 'utf-16'
-
-   local tidy = function() end
-   local suffix = nil
-   if expand_snippet then
-      local line = api.nvim_buf_get_lines(bufnr, lnum, lnum + 1, true)[1]
-      tidy = function()
-
-         local start_char = col - #completed_item.word
-         local l = line
-         api.nvim_buf_set_text(bufnr, lnum, start_char, lnum, #l, { '' })
-      end
-      suffix = line:sub(col + 1)
-   end
-
-   if item.additionalTextEdits then
-      tidy()
-      lsp.util.apply_text_edits(item.additionalTextEdits, bufnr, offset_encoding)
-      if expand_snippet then
-         apply_snippet(item, suffix, lnum)
-      end
-   elseif resolveEdits and type(item) == 'table' then
-      local v = client.request_sync('completionItem/resolve', item, 1000, bufnr)
-      assert(not v.err, vim.inspect(v.err))
-      local res = v.result
-      if res.additionalTextEdits then
-         tidy()
-         tidy = function() end
-         lsp.util.apply_text_edits(res.additionalTextEdits, bufnr, offset_encoding)
-      end
-      if expand_snippet then
-         tidy()
-         apply_snippet(item, suffix, lnum)
-      end
-   elseif expand_snippet then
-      tidy()
-      apply_snippet(item, suffix, lnum)
-   end
-end
-
 local ctags_extension = {
    default = {
       ['c'] = 'class',
@@ -430,6 +381,102 @@ function Sources.filepath_matches(opts)
 end
 
 
+
+local tslocals = require('nvim-treesitter.locals')
+
+function Sources.treesitter_matches(opts)
+   local _config = options.get({}, opts)
+
+   return cached('treesitter', function(line_to_cursor, _lnum)
+      local prefix = utils.prefix.vim_keyword(line_to_cursor)
+      local defs = tslocals.get_definitions(0)
+
+      local items = {}
+
+      for _, def in ipairs(defs) do
+
+         local node
+         local kind
+         for k, cap in pairs(def) do
+            if k ~= 'associated' then
+               node = cap.node
+               kind = k
+               break
+            end
+         end
+
+         if node then
+            items[#items + 1] = {
+               word = vim.treesitter.query.get_node_text(node, 0),
+               kind = kind,
+               icase = 1,
+               dup = 0,
+               empty = 1,
+               equal = 1,
+               user_data = { source = 'treesitter' },
+            }
+         end
+      end
+
+      return items, prefix
+   end)
+end
+
+
+
+local function lsp_completedone(completed_item)
+   local cursor = api.nvim_win_get_cursor(0)
+   local col = cursor[2]
+   local lnum = cursor[1] - 1
+   local item = completed_item.user_data
+   local bufnr = api.nvim_get_current_buf()
+   local expand_snippet = item.insertTextFormat == 2
+
+   local client = lsp.get_client_by_id()
+   if not client then
+      return
+   end
+
+   local resolveEdits = (client.server_capabilities.completionProvider or {}).resolveProvider
+   local offset_encoding = client and client.offset_encoding or 'utf-16'
+
+   local tidy = function() end
+   local suffix = nil
+   if expand_snippet then
+      local line = api.nvim_buf_get_lines(bufnr, lnum, lnum + 1, true)[1]
+      tidy = function()
+
+         local start_char = col - #completed_item.word
+         local l = line
+         api.nvim_buf_set_text(bufnr, lnum, start_char, lnum, #l, { '' })
+      end
+      suffix = line:sub(col + 1)
+   end
+
+   if item.additionalTextEdits then
+      tidy()
+      lsp.util.apply_text_edits(item.additionalTextEdits, bufnr, offset_encoding)
+      if expand_snippet then
+         apply_snippet(item, suffix, lnum)
+      end
+   elseif resolveEdits and type(item) == 'table' then
+      local v = client.request_sync('completionItem/resolve', item, 1000, bufnr)
+      assert(not v.err, vim.inspect(v.err))
+      local res = v.result
+      if res.additionalTextEdits then
+         tidy()
+         tidy = function() end
+         lsp.util.apply_text_edits(res.additionalTextEdits, bufnr, offset_encoding)
+      end
+      if expand_snippet then
+         tidy()
+         apply_snippet(item, suffix, lnum)
+      end
+   elseif expand_snippet then
+      tidy()
+      apply_snippet(item, suffix, lnum)
+   end
+end
 
 local function luasnip_completedone(_)
    if require('luasnip').expandable() then

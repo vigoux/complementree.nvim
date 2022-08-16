@@ -44,6 +44,7 @@ We define a set of `sources` that are triggered when calling the
 `complementree.complete()` function.
 
 The defaults are:
+- `treesitter`: all names defined in the current file (very basic for now)
 - `lsp`: lsp-only source, with LSP snippets enabled
 - `luasnip`: luasnip snippets
 - `ctags`: tagfile elements, a more configurable form of `<C-X><C-]>`
@@ -77,9 +78,10 @@ The currently implemented matches functions are:
 - `luasnip_matches`: for LuaSnip matches.
 - `filepath_matches`: for files under the current directory
 - `ctags_matches`: for matches in the current tagfile
+- `treesitter_matches`: for symbols defined in the current file (basic for now)
 
 All the `_matches` function take a table of options as parameters, dig
-into the [sources file](./lua/complementree/sources.lua) for more info
+into the [sources file](./teal/complementree/sources.tl) for more info
 about that.
 
 Using combinators, you can complete using LSP + LuaSnip with the
@@ -161,5 +163,5 @@ Fuzzy LSP and LuaSnip only if LSP returns something:
 combinators.pipeline(combinators.optional(source.lsp_matches {}, source.luasnip_matches {}), comparators.fzy, filters.amount(6))
 ```
 
-Look in the [defaults file](./lua/complementree/defaults.lua) for
+Look in the [defaults file](./teal/complementree/defaults.tl) for
 more.

@@ -5,6 +5,7 @@ local record Defaults
   lsp: Completor
   ctags: Completor
   filepath: Completor
+  treesitter: Completor
 end
 
 local comb = require 'complementree.combinators'
@@ -31,5 +32,7 @@ Defaults.lsp = comb.pipeline(sources.lsp_matches {}, filters.prefix, comp.alphab
 Defaults.ctags = comb.pipeline(sources.ctags_matches {}, filters.prefix, comp.alphabetic)
 
 Defaults.filepath = comb.pipeline(sources.filepath_matches {}, filters.substr, comp.alphabetic)
+
+Defaults.treesitter = comb.pipeline(sources.treesitter_matches {}, filters.substr, comp.alphabetic)
 
 return Defaults

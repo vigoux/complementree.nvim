@@ -38,7 +38,7 @@ local function correct_position(line_to_cursor: string, linenr: integer): intege
   return linenr - 1, col - 1
 end
 
-local function node_type_at_cursor(l: integer, c: integer): string
+local function node_type_at_position(l: integer, c: integer): string
   local root = tsutils.get_root_for_position(l, c)
   if not root then
     return
@@ -79,7 +79,7 @@ local function get_completion(ft: string, line_to_cursor: string, lnum: integer,
         end
       end
 
-      local t = node_type_at_cursor(l, c)
+      local t = node_type_at_position(l, c)
       if not t then
         local def = ft_completion.default
         if def is Completor then

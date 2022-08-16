@@ -39,4 +39,6 @@ function Utils.make_relative_path(path: string, root: string): string
   return path
 end
 
+Utils.prefix = Prefix
+
 return Utils
