@@ -1,3 +1,5 @@
+# __This plugin has moved to [sr.ht](https://sr.ht/~vigoux/complementree.nvim/) and development will continue there__
+
 # Complementree.nvim: a tree-sitter powered completion framework
 
 A tree-sitter powered _completion framework_ built for Neovim,
@@ -12,7 +14,7 @@ Features and design goals:
 ## Installation
 
 ```lua
-use {'vigoux/complementree.nvim', requires = {'L3MON4D3/LuaSnip', 'nvim-treesitter/nvim-treesitter'} }
+use {'https://git.sr.ht/~vigoux/complementree.nvim', requires = {'L3MON4D3/LuaSnip', 'nvim-treesitter/nvim-treesitter'} }
 ```
 
 ## Setting up
